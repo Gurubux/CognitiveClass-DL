@@ -1,0 +1,23 @@
+Module 1 - Introduction to Deep Learning
+	Why Deep Learning?
+	What is a neural network?
+	Three reasons to go Deep
+	Your choice of Deep Net
+	An old problem: The Vanishing Gradient
+Module 2 - Deep Learning Models
+	Restricted Boltzmann Machines
+	Deep Belief Nets
+	Convolutional Networks
+	Recurrent Nets
+Module 3 - Additional Deep Learning Models
+	Autoencoders
+	Recursive Neural Tensor Nets
+	Deep Learning Use Cases
+Module 4 - Deep Learning Platforms and Software Libraries
+	What is a Deep Learning Platform?
+	H2O.ai
+	Dato GraphLab
+	What is a Deep Learning Library?
+	Theano
+	Caffe
+	TensorFlow
