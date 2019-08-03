@@ -4,15 +4,64 @@ Module 1 - Introduction to Deep Learning
 	Three reasons to go Deep
 	Your choice of Deep Net
 	An old problem: The Vanishing Gradient
+
+@Select the reason(s) for using a Deep Neural Network
+ 	- Some patterns are very complex and can`t be deciphered precisely by alternate means  
+ 	- Deep Nets are great at recognizing patterns and using them as building blocks in deciphering inputs  
+ 	- We finally have the technology - GPUs - to accelerate the training process by several folds of magnitude
+
+ @What is TRUE about the functions of a Multi Layer Perceptron?
+	- The first neural nets that were born out of the need to address the inaccuracy of an early classifier, the perceptron.  
+	- It predicts which group a given set of inputs falls into.  
+	- It generates a score that determines the confidence level of the prediction.  
+@Why is the vanishing gradient a problem?
+	- Training is quick if the gradient is large and slow if its small.
+	- With backprop, the gradient becomes smaller as it works back through the net .
+	- The gradient is calculated multiplying two numbers between 0 and 1
+
+------------------------------------------------------------------------------------------------------	
 Module 2 - Deep Learning Models
 	Restricted Boltzmann Machines
 	Deep Belief Nets
 	Convolutional Networks
+	"https://www.youtube.com/playlist?list=PLkt2uSq6rBVctENoVBg1TpCC7OQi31AlC"
 	Recurrent Nets
+
+@For Unsupervised Learning, which of the following deep nets would you choose?
+	✔Autoencoder or Restricted Boltzmann Machines✔
+	Deep Belief Nets  
+	Convolutional Nets  
+	Recurrent Nets
+
+@The RELU activation has no effect on back-propagation and the vanishing gradient
+False: 
+
+@Convolutional Nets are the right model when dealing with data that changes over time because of their built-in feedback loop, allowing them to serve as a forecasting engine.
+False
+------------------------------------------------------------------------------------------------------	
 Module 3 - Additional Deep Learning Models
 	Autoencoders
 	Recursive Neural Tensor Nets
 	Deep Learning Use Cases
+
+Which of the following are use cases of Deep nets?
+ 	- Sentiment Analysis of text data.  
+ 	- Offering personalized ads based on user activity history.  
+ 	- Flagging a transaction as fraudulent.  
+ 	- Analyze and segment customers based on digital activity and footprint.  
+ 	- Using satellite feeds and sensor data to detect changes in environmental conditions.
+
+ Which of the following are use cases of machine vision. Select all that apply.
+ 	- Image classification and tagging  
+ 	- Face Detection  
+ 	- Video Recognition
+
+ Which of the following is a good application of an RNTN?
+ 	- If the patterns change through time  
+ 	- For general classification problems  
+ 	- ✔If there is an unknown hierarchy inherent in the input features ✔
+ 	- For Supervised Fine-tuning  To determine the relative importance in the input features
+------------------------------------------------------------------------------------------------------	
 Module 4 - Deep Learning Platforms and Software Libraries
 	What is a Deep Learning Platform?
 	H2O.ai
@@ -21,3 +70,10 @@ Module 4 - Deep Learning Platforms and Software Libraries
 	Theano
 	Caffe
 	TensorFlow
+Which of the following is not an aspect of a deep net platform?
+	- Deriving the optimal hyper-parameter configuration
+
+What are the different aspects of a Deep Learning Library?
+	- They are a set of pre-built functions and modules that you can call through your own programs  
+	- Usually maintained by high-performance teams and are regularly updated  
+	- Most are open source and have a large community that contribute to the code base
