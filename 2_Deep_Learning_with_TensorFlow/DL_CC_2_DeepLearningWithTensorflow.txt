@@ -1,9 +1,229 @@
 Deep Learning with TensorFlow
 Module 1 – Introduction to TensorFlow
 	HelloWorld with TensorFlow
-	Linear Regression
+
+
+
+operations can be easily found in: "https://www.tensorflow.org/versions/r1.14/api_docs/python/index.html"
+
+\Building a Graph
+with graph1.as_default():
+    a = tf.constant([2], name = 'constant_a')
+    b = tf.constant([3], name = 'constant_b')
+    c = tf.add(a, b)
+
+with tf.Session(graph = graph1) as sess:
+    result = sess.run(c)
+    print(result)
+
+
+\Defining multidimensional arrays using TensorFlow
+graph2 = tf.Graph()
+with graph2.as_default():
+    Scalar = tf.constant(2)
+    Vector = tf.constant([5,6,2])
+    Matrix = tf.constant([[1,2,3],[2,3,4],[3,4,5]])
+    Tensor = tf.constant( [ [[1,2,3],[2,3,4],[3,4,5]] , [[4,5,6],[5,6,7],[6,7,8]] , [[7,8,9],[8,9,10],[9,10,11]] ] )
+with tf.Session(graph = graph2) as sess:
+    result = sess.run(Scalar)
+    print ("Scalar (1 entry):\n %s \n" % result)
+    result = sess.run(Vector)
+    print ("Vector (3 entries) :\n %s \n" % result)
+    result = sess.run(Matrix)
+    print ("Matrix (3x3 entries):\n %s \n" % result)
+    result = sess.run(Tensor)
+    print ("Tensor (3x3x3 entries) :\n %s \n" % result)
+
+Scalar.shape
+Tensor.shape
+
+graph3 = tf.Graph()
+with graph3.as_default():
+    Matrix_one = tf.constant([[1,2,3],[2,3,4],[3,4,5]])
+    Matrix_two = tf.constant([[2,2,2],[2,2,2],[2,2,2]])
+
+    add_1_operation = tf.add(Matrix_one, Matrix_two)
+    add_2_operation = Matrix_one + Matrix_two
+
+with tf.Session(graph =graph3) as sess:
+    result = sess.run(add_1_operation)
+    print ("Defined using tensorflow function :")
+    print(result)
+    result = sess.run(add_2_operation)
+    print ("Defined using normal expressions :")
+    print(result)
+
+graph4 = tf.Graph()
+with graph4.as_default():
+    Matrix_one = tf.constant([[2,3],[3,4]])
+    Matrix_two = tf.constant([[2,3],[3,4]])
+
+    mul_operation = tf.matmul(Matrix_one, Matrix_two)
+
+with tf.Session(graph = graph4) as sess:
+    result = sess.run(mul_operation)
+    print ("Defined using tensorflow function :")
+    print(result)
+
+\Variables
+v = tf.Variable(0)
+update = tf.assign(v, v+1)
+init_op = tf.global_variables_initializer()
+
+with tf.Session() as session:
+    session.run(init_op)
+    print(session.run(v))
+    for _ in range(3):
+        session.run(update)
+        print(session.run(v))
+>>>
+0
+1
+2
+3
+
+\Placeholders
+a = tf.placeholder(tf.float32)
+b = a * 2
+with tf.Session() as sess:
+    result = sess.run(b,feed_dict={a:3.5})
+    print (result)
+7.0
+
+\Operations
+#tf.constant, tf.matmul, tf.add, tf.nn.sigmoid are some of the operations in TensorFlow. These are like functions in python but operate directly over tensors and each one does a specific thing.
+graph5 = tf.Graph()
+with graph5.as_default():
+    a = tf.constant([5])
+    b = tf.constant([2])
+    c = tf.add(a,b)
+    d = tf.subtract(a,b)
+
+with tf.Session(graph = graph5) as sess:
+    result = sess.run(c)
+    print ('c =: %s' % result)
+    result = sess.run(d)
+    print ('d =: %s' % result)
+>>>
+c =: [7]
+d =: [3]
+
+
+
+
+------------------------------------------------------------------------------------------------------
+"	LINEAR REGRESSION"
+train_x = np.asanyarray(df[['ENGINESIZE']])
+train_y = np.asanyarray(df[['CO2EMISSIONS']])
+
+a = tf.Variable(20.0)
+b = tf.Variable(30.2)
+y = a * train_x + b
+
+loss = tf.reduce_mean(tf.square(y - train_y))
+
+optimizer = tf.train.GradientDescentOptimizer(0.05)
+
+train = optimizer.minimize(loss)
+
+init = tf.global_variables_initializer()
+sess = tf.Session()
+sess.run(init)
+
+loss_values = []
+train_data = []
+for step in range(100):
+    _, loss_val, a_val, b_val = sess.run([train, loss, a, b])
+    loss_values.append(loss_val)
+    if step % 5 == 0:
+        print(step, loss_val, a_val, b_val)
+        train_data.append([a_val, b_val])
+>>>
+0 26992.592 20.0 30.2
+5 1891.7206 58.844624 47.59573
+10 1762.7244 57.911816 51.973316
+15 1653.5897 56.615788 57.051537
+20 1559.044 55.404785 61.776962
+25 1477.1368 54.27767 66.17523
+30 1406.1788 53.2286 70.269
+35 1344.7057 52.252155 74.07933
+40 1291.4506 51.343315 77.625854
+45 1245.3143 50.4974 80.92684
+50 1205.3451 49.710052 83.99928
+55 1170.7186 48.977207 86.85902
+60 1140.7212 48.29511 89.52075
+65 1114.7336 47.53863 92.47271
+70 1092.22 47.069313 94.304115
+75 1072.716 46.413963 96.861465
+80 1055.8191 46.007378 98.44806
+85 1041.181 45.530895 100.30742
+90 1028.4995 45.0874 102.038055
+95 1017.5135 44.67461 103.648865
+
+plt.plot(loss_values, 'ro')
+
+
+cr, cg, cb = (1.0, 1.0, 0.0)
+for f in train_data:
+    cb += 1.0 / len(train_data)
+    cg -= 1.0 / len(train_data)
+    if cb > 1.0: cb = 1.0
+    if cg < 0.0: cg = 0.0
+    [a, b] = f
+    f_y = np.vectorize(lambda x: a*x + b)(train_x)
+    line = plt.plot(train_x, f_y)
+    plt.setp(line, color=(cr,cg,cb))
+plt.plot(train_x, train_y, 'ro')
+green_line = mpatches.Patch(color='red', label='Data Points')
+plt.legend(handles=[green_line])
+plt.show()
+
+
+
+
+
+
+
+
+------------------------------------------------------------------------------------------------------
 	Nonlinear Regression
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+------------------------------------------------------------------------------------------------------
 	Logistic Regression
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+------------------------------------------------------------------------------------------------------
 	Activation Functions
 
 Module 2 – Convolutional Neural Networks (CNN)
