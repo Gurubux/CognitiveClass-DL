@@ -1,0 +1,56 @@
+----------------------------------------------------------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------------------------------------------------------
+MODULE 2 – CONVOLUTIONAL NEURAL NETWORKS (CNN)
+
+CNN
+	- Automatic and effective Feature extraction
+	- Convolutional Neural Network - Or CNN For short - is a deep learning approach that learns directly From samples in a way that is much more effective than traditional Neural networks. 
+	- CNNs achieve this type of automatic feature selection and classification through multiple specific layers of sophisticated mathematical operations. Through multiple layers, a CNN learns multiple levels of feature sets at different levels of abstraction. And this leads to very effective classification. 
+	- Machine vision projects, including image recognition Or classification, such As distinguishing animal photos or 
+	- Digit recognition, 
+	- Skin cancer classification. 
+	- Object detection, For example real-time recognition of passengers in images captured by self-driving cars. 
+	- Coloring black and white images, and creating art images.
+	
+In this lesson you will learn about:
+	Introduction to Convolutional Networks
+	Convolution and Feature Learning
+	Convolution with Python and Tensor Flow
+	The MNIST Database
+	Multilayer Perceptron with Tensor Flow
+	Convolutional Network with Tensor Flow
+----------------------------------------------------------------------------------------------------------------------------------------------------
+Introduction to Convolutional Networks 
+
+
+
+
+
+
+----------------------------------------------------------------------------------------------------------------------------------------------------
+CNNs for Classification 
+
+
+
+
+
+
+----------------------------------------------------------------------------------------------------------------------------------------------------
+CNN Architecture
+
+
+
+
+
+
+----------------------------------------------------------------------------------------------------------------------------------------------------
+LAB
+
+
+
+
+
+
+
+----------------------------------------------------------------------------------------------------------------------------------------------------
+QUIZ

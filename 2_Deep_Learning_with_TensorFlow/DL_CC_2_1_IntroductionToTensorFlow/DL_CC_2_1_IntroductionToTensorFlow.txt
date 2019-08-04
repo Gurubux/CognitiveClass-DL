@@ -553,37 +553,12 @@ DEEP NEURAL NETWORKS
 		- Autoencoders take a set of unlabeled inputs, encodes them into short codes, and then uses those to reconstruct the original image, While extracting the most valuable information From the data.
 		- As the encoder part of the network, Autoencoders compress data From the input layer into a short code -- a method that can be used For               "dimensionality reduction" tasks. 
 		- Also, in stacking multiple Autoencoder layers, the network learns multiple levels of representation at different levels of abstraction. 
-			For example, to detect a face in an image, the network encodes the primitive features, like the edges of a face. Then, the first layer`s output goes to the second Autoencoder, to encode the less local features, like the nose, and so on. Therefore, it can be used for Feature Extraction and image recognition.
+			For example, to detect a face in an image, the network encodes the primitive features, like the edges of a face. Then, the first layer`s output goes to the second Autoencoder, to encode the less local features, like the nose, and so on. Therefore, it can be used For Feature Extraction and image recognition.
 -------------------------------------------------------------------------------------------------------------------
 QUIZ
 @What is a Data Flow Graph?
  A representation of data dependencies between operations
 
-@Why TensorFlow is proper library for Deep Learning?
- It will benefit from TensorFlow’s auto-differentiation and suite of first-rate optimizers.  Provides helpful tools to assemble subgraphs common in neural networks and deep learning  TensorFlow has extensive built-in support for deep learning
+@Why TensorFlow is proper library For Deep Learning?
+ It will benefit From TensorFlow’s auto-differentiation and suite of first-rate optimizers.  Provides helpful tools to assemble subgraphs common in neural networks and deep learning  TensorFlow has extensive built-in support For deep learning.
 
-
---------------------------------------------------------------------------
-Module 2 – Convolutional Neural Networks (CNN)
-	CNN History
-	Understanding CNNs
-	CNN Application
-
-
-Module 3 – Recurrent Neural Networks (RNN)
-	Intro to RNN Model
-	Long Short-Term memory (LSTM)
-	Recursive Neural Tensor Network Theory
-	Recurrent Neural Network Model
-
-
-Module 4 - Unsupervised Learning
-	Applications of Unsupervised Learning
-	Restricted Boltzmann Machine
-	Collaborative Filtering with RBM
-
-
-Module 5 - Autoencoders
-	Introduction to Autoencoders and Applications
-	Autoencoders
-	Deep Belief Network
