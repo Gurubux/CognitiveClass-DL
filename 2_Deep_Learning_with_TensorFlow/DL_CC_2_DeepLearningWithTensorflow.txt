@@ -66,6 +66,9 @@ with tf.Session(graph = graph4) as sess:
     print(result)
 
 \Variables
+tf.Variable — A variable maintains state in the graph across calls to run(). You add a variable to the graph by constructing an instance of the class Variable.
+The Variable() constructor requires an initial value for the variable, which can be a Tensor of any type and shape. The initial value defines the type and shape of the variable. After construction, the type and shape of the variable are fixed. The value can be changed using one of the assign methods.
+
 v = tf.Variable(0)
 update = tf.assign(v, v+1)
 init_op = tf.global_variables_initializer()
@@ -83,6 +86,7 @@ with tf.Session() as session:
 3
 
 \Placeholders
+tf.placeholder - A placeholder is simply a variable that we will assign data to at a later date. It allows us to create our operations and build our computation graph, without needing the data. In TensorFlow terminology, we then feed data into the graph through these placeholders.
 a = tf.placeholder(tf.float32)
 b = a * 2
 with tf.Session() as sess:
@@ -112,13 +116,15 @@ d =: [3]
 
 
 ------------------------------------------------------------------------------------------------------
-"	LINEAR REGRESSION"
+"LINEAR REGRESSION"
+------------------------------------------------------------------------------------------------------
+@@@@@@@@@@@@@@@@@@FROM_SCRATCH@@@@@@@@@@@@@@@@@
 train_x = np.asanyarray(df[['ENGINESIZE']])
 train_y = np.asanyarray(df[['CO2EMISSIONS']])
 
-a = tf.Variable(20.0)
+w = tf.Variable(20.0)
 b = tf.Variable(30.2)
-y = a * train_x + b
+y = w * train_x + b
 
 loss = tf.reduce_mean(tf.square(y - train_y))
 
@@ -133,11 +139,11 @@ sess.run(init)
 loss_values = []
 train_data = []
 for step in range(100):
-    _, loss_val, a_val, b_val = sess.run([train, loss, a, b])
+    _, loss_val, w_val, b_val = sess.run([train, loss, w, b])
     loss_values.append(loss_val)
     if step % 5 == 0:
-        print(step, loss_val, a_val, b_val)
-        train_data.append([a_val, b_val])
+        print(step, loss_val, w_val, b_val)
+        train_data.append([w_val, b_val])
 >>>
 0 26992.592 20.0 30.2
 5 1891.7206 58.844624 47.59573
@@ -169,8 +175,8 @@ for f in train_data:
     cg -= 1.0 / len(train_data)
     if cb > 1.0: cb = 1.0
     if cg < 0.0: cg = 0.0
-    [a, b] = f
-    f_y = np.vectorize(lambda x: a*x + b)(train_x)
+    [w, b] = f
+    f_y = np.vectorize(lambda x: w*x + b)(train_x)
     line = plt.plot(train_x, f_y)
     plt.setp(line, color=(cr,cg,cb))
 plt.plot(train_x, train_y, 'ro')
@@ -178,6 +184,157 @@ green_line = mpatches.Patch(color='red', label='Data Points')
 plt.legend(handles=[green_line])
 plt.show()
 
+@@@@@@@@@@@@@@@@@USING KERAS INBUILD@@@@@@@@@@@@@@@@@
+
+\Build the model - keras.Sequential() - model.compile()
+def build_model():
+  model = keras.Sequential([
+    layers.Dense(64, activation=tf.nn.relu, input_shape=[len(train_dataset.keys())]),
+    layers.Dense(64, activation=tf.nn.relu),
+    layers.Dense(1)
+  ])
+
+  optimizer = tf.keras.optimizers.RMSprop(0.001)
+
+  model.compile(loss='mean_squared_error',
+                optimizer=optimizer,
+                metrics=['mean_absolute_error', 'mean_squared_error'])
+  return model
+
+model = build_model()
+
+\Inspect the model- summary()
+model.summary()
+>>> Model: "sequential"
+	_________________________________________________________________
+	Layer (type)                 Output Shape              Param #   
+	=================================================================
+	dense (Dense)                (None, 64)                640       
+	_________________________________________________________________
+	dense_1 (Dense)              (None, 64)                4160      
+	_________________________________________________________________
+	dense_2 (Dense)              (None, 1)                 65        
+	=================================================================
+	Total params: 4,865
+	Trainable params: 4,865
+	Non-trainable params: 0
+
+\Prediction - model.predict()
+example_batch = normed_train_data[:10]
+example_result = model.predict(example_batch)
+example_result
+
+\Train - model.fit()
+# Display training progress by printing a single dot for each completed epoch
+class PrintDot(keras.callbacks.Callback):
+  def on_epoch_end(self, epoch, logs):
+    if epoch % 100 == 0: print('')
+    print('.', end='')
+
+EPOCHS = 1000
+
+history = model.fit(
+  normed_train_data, train_labels,
+  epochs=EPOCHS, validation_split = 0.2, verbose=0,
+  callbacks=[PrintDot()])
+
+history.history.keys()
+>>> dict_keys(['loss', 'mean_absolute_error', 'mean_squared_error', 'val_loss', 'val_mean_absolute_error', 'val_mean_squared_error'])
+
+hist = pd.DataFrame(history.history)
+	loss		mean_absolute_error	mean_squared_error	val_loss	val_mean_absolute_error	val_mean_squared_error	epoch
+995	3.058138	1.059692			3.058138			8.247167	2.149352				8.247168				995
+996	2.960317	1.019691			2.960317			8.361647	2.173685				8.361647				996
+997	3.085241	1.045506			3.085242			7.954236	2.127502				7.954236				997
+998	3.054248	1.037639			3.054248			8.142185	2.119220				8.142185				998
+999	2.995592	1.061563			2.995592			8.340976	2.162402				8.340976				999
+
+
+
+\EarlyStopping
+model = build_model()
+
+# The patience parameter is the amount of epochs to check for improvement
+early_stop = keras.callbacks.EarlyStopping(monitor='val_loss', patience=10)
+
+history = model.fit(normed_train_data, train_labels, epochs=EPOCHS,
+                    validation_split = 0.2, verbose=0, callbacks=[early_stop, PrintDot()])
+
+plot_history(history)
+
+
+\Evaluation - model.evaluate()
+loss, mae, mse = model.evaluate(normed_test_data, test_labels, verbose=0)
+
+
+\Prediction
+test_predictions = model.predict(normed_test_data).flatten()
+
+This notebook introduced a few techniques to handle a regression problem.
+	- Mean Squared Error (MSE) is a common loss function used for regression problems (different loss functions are used for classification problems).
+	- Similarly, evaluation metrics used for regression differ from classification. A common regression metric is Mean Absolute Error (MAE).
+	- When numeric input data features have values with different ranges, each feature should be scaled independently to the same range.
+	- If there is not much training data, one technique is to prefer a small network with few hidden layers to avoid overfitting.
+	- Early stopping is a useful technique to prevent overfitting.
+
+
+--------------------------------------------------------------------------------------
+\Eager Execution
+If you`re familiar with TensorFlow graphs, the API for constructing the Dataset object remains exactly the same when eager execution is enabled, but the process of iterating over elements of the dataset is slightly simpler. You can use Python iteration over the tf.data.Dataset object and do not need to explicitly create an tf.data.Iterator object. As a result, the discussion on iterators in the TensorFlow Guide is not relevant when eager execution is enabled.
+Iterate
+When eager execution is enabled Dataset objects support iteration. If you`re familiar with the use of Datasets in TensorFlow graphs, note that there is no need for calls to Dataset.make_one_shot_iterator() or get_next() calls.
+--------------------------------------------------------------------------------------
+print('Elements of ds_tensors:')
+for x in ds_tensors:
+  print(x)
+
+>>>
+Elements of ds_tensors:
+tf.Tensor([4 1], shape=(2,), dtype=int32)
+tf.Tensor([ 9 16], shape=(2,), dtype=int32)
+tf.Tensor([25 36], shape=(2,), dtype=int32)
+
+--------------------------------------------------------------------------------------
+print('\nElements in ds_file:')
+for x in ds_file:
+  print(x)
+
+>>>
+Elements in ds_file:
+tf.Tensor([b'Line 1' b'Line 2'], shape=(2,), dtype=string)
+tf.Tensor([b'Line 3' b'  '], shape=(2,), dtype=string)
+
+
+--------------------------------------------------------------------------------------
+w and b are tf.Variable()
+X and Y are tf.placeholder()
+
+y_pred = w * train_x + b
+loss = tf.reduce_mean(tf.square(y - train_y))
+
+opt = tf.train.GradientDescentOptimizer(0.01) #tf.train "https://www.tensorflow.org/api_docs/python/tf/train"
+			
+linModel = opt.minimize(loss)
+
+for i in range(100):
+	session.run(linModel,feed_dict={X: train_x,Y:train_y})
+------------------------------------------------------------------------------------------------------
+"NONLINEAR REGRESSION"
+------------------------------------------------------------------------------------------------------
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -186,21 +343,131 @@ plt.show()
 
 
 ------------------------------------------------------------------------------------------------------
-	Nonlinear Regression
+"LOGISTIC REGRESSION"
+------------------------------------------------------------------------------------------------------
+# numFeatures is the number of features in our input data.
+# In the iris dataset, this number is '4'.
+numFeatures = trainX.shape[1]
+
+# numLabels is the number of classes our data points can be in.
+# In the iris dataset, this number is '3'.
+numLabels = trainY.shape[1]
+
+
+# Placeholders
+# 'None' means TensorFlow shouldn't expect a fixed number in that dimension
+X = tf.placeholder(tf.float32, [None, numFeatures]) # Iris has 4 features, so X is a tensor to hold our data.
+yGold = tf.placeholder(tf.float32, [None, numLabels]) # This will be our correct answers matrix for 3 classes.
+
+W = tf.Variable(tf.zeros([4, 3]))  # 4-dimensional input and  3 classes
+b = tf.Variable(tf.zeros([3])) # 3-dimensional output [0,0,1],[0,1,0],[1,0,0]
+
+#Randomly sample from a normal distribution with standard deviation .01
+
+weights = tf.Variable(tf.random_normal([numFeatures,numLabels],
+                                       mean=0,
+                                       stddev=0.01,
+                                       name="weights"))
+
+bias = tf.Variable(tf.random_normal([1,numLabels],
+                                    mean=0,
+                                    stddev=0.01,
+                                    name="bias"))
+
+
+# Three-component breakdown of the Logistic Regression equation.
+# Note that these feed into each other.
+apply_weights_OP = tf.matmul(X, weights, name="apply_weights")
+add_bias_OP = tf.add(apply_weights_OP, bias, name="add_bias") 
+activation_OP = tf.nn.sigmoid(add_bias_OP, name="activation")
+
+# Number of Epochs in our training
+numEpochs = 700
+
+# Defining our learning rate iterations (decay)
+learningRate = tf.train.exponential_decay(learning_rate=0.0008,
+                                          global_step= 1,
+                                          decay_steps=trainX.shape[0],
+                                          decay_rate= 0.95,
+                                          staircase=True)
+
+#Defining our cost function - Squared Mean Error
+cost_OP = tf.nn.l2_loss(activation_OP-yGold, name="squared_error_cost")
+
+#Defining our Gradient Descent
+training_OP = tf.train.GradientDescentOptimizer(learningRate).minimize(cost_OP)
+
+
+# argmax(activation_OP, 1) returns the label with the most probability
+# argmax(yGold, 1) is the correct label
+correct_predictions_OP = tf.equal(tf.argmax(activation_OP,1),tf.argmax(yGold,1))
+
+# If every false prediction is 0 and every true prediction is 1, the average returns us the accuracy
+accuracy_OP = tf.reduce_mean(tf.cast(correct_predictions_OP, "float"))
+
+# Summary op for regression output
+activation_summary_OP = tf.summary.histogram("output", activation_OP)
+
+# Summary op for accuracy
+accuracy_summary_OP = tf.summary.scalar("accuracy", accuracy_OP)
+
+# Summary op for cost
+cost_summary_OP = tf.summary.scalar("cost", cost_OP)
+
+# Summary ops to check how variables (W, b) are updating after each iteration
+weightSummary = tf.summary.histogram("weights", weights.eval(session=sess))
+biasSummary = tf.summary.histogram("biases", bias.eval(session=sess))
+
+# Merge all summaries
+merged = tf.summary.merge([activation_summary_OP, accuracy_summary_OP, cost_summary_OP, weightSummary, biasSummary])
+
+# Summary writer
+writer = tf.summary.FileWriter("summary_logs", sess.graph)
+
+
+# Initialize reporting variables
+cost = 0
+diff = 1
+epoch_values = []
+accuracy_values = []
+cost_values = []
+
+# Training epochs
+for i in range(numEpochs):
+    if i > 1 and diff < .0001:
+        print("change in cost %g; convergence."%diff)
+        break
+    else:
+        # Run training step
+        step = sess.run(training_OP, feed_dict={X: trainX, yGold: trainY})
+        # Report occasional stats
+        if i % 10 == 0:
+            # Add epoch to epoch_values
+            epoch_values.append(i)
+            # Generate accuracy stats on test data
+            train_accuracy, newCost = sess.run([accuracy_OP, cost_OP], feed_dict={X: trainX, yGold: trainY})
+            # Add accuracy to live graphing variable
+            accuracy_values.append(train_accuracy)
+            # Add cost to live graphing variable
+            cost_values.append(newCost)
+            # Re-assign values for variables
+            diff = abs(newCost - cost)
+            cost = newCost
+
+            #generate print statements
+            print("step %d, training accuracy %g, cost %g, change in cost %g"%(i, train_accuracy, newCost, diff))
+
+
+# How well do we perform on held-out test data?
+print("final accuracy on test set: %s" %str(sess.run(accuracy_OP, 
+                                                     feed_dict={X: testX, 
+                                                                yGold: testY})))
 
 
 
 
-
-
-
-
-
-
-
-
-
-
+"https://www.kaggle.com/autuanliuyc/logistic-regression-with-tensorflow"
+"https://www.kaggle.com/kernels/scriptcontent/1563098/download"
 
 
 
@@ -208,24 +475,95 @@ plt.show()
 
 
 ------------------------------------------------------------------------------------------------------
-	Logistic Regression
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+"ACTIVATION FUNCTIONS"
 ------------------------------------------------------------------------------------------------------
-	Activation Functions
+tf.matmul(i, w) + b 
+>>> array([[3.2197657, 1.3871115, 1.119527 ]]
 
+\The Step Functions
+\The Sigmoid Functions-
+	1. Logistic Regression (sigmoid) - tf.sigmoid()
+	The Logistic function, as its name implies, is widely used in Logistic Regression. It is defined as  𝑓(𝑥)=1/1+𝑒xp(−𝑥) . Effectively, this makes it so you have a Sigmoid over the  (0,1)  interval, like so:
+	"Using sigmoid in a neural net layer"
+		act = tf.sigmoid(tf.matmul(i, w) + b)
+		act.eval(session=sess)
+		>>> array([[0.01842429, 0.9020358 , 0.0324687 ]]
+
+	2. Tanh - tf.tanh()
+	The Hyperbolic Tangent, or TanH as it`s usually called, is defined as  𝑓(𝑥)=[2/1+exp(−2𝑥)] −1 . It produces a sigmoid over the  (−1,1)  interval. TanH is widely used in a wide range of applications, and is probably the most used function of the Sigmoid family.
+		act = tf.tanh(tf.matmul(i, w) + b)
+		act.eval(session=sess)
+		>>> array([[ 0.9759273 ,  0.99999636, -0.99355525]], dtype=float32)
+
+
+\The Linear Unit functions-tf.nn.relu()
+	Linear Units are the next step in activation functions. They take concepts From both Step and Sigmoid functions and behave within the best of the two types of functions. Linear Units in general tend to be variation of what is called the Rectified Linear Unit, or ReLU For short.
+	1. ReLU
+		The ReLU is a simple function which operates within the  [0,∞)  interval. For the entirety of the negative value domain, it returns a value of 0, While on the positive value domain, it returns  𝑥  For any  𝑓(𝑥) .
+		While it may seem counterintuitive to utilize a pseudo-linear function instead of something like Sigmoids, ReLUs provide some benefits which might not be understood at first glance. For example, during the initialization process of a Neural Network model, in which weights are distributed at random For each unit, ReLUs will only activate approximately only in 50% of the times -- which saves some processing power. Additionally, the ReLU structure takes care of what is called the Vanishing and Exploding Gradient problem by itself. Another benefit -- if not only marginally relevant to us -- is that this kind of activation function is directly relatable to the nervous system analogy of Neural Networks (this is called Biological Plausibility).
+		The ReLU structure has also has many variations optimized For certain applications, but those are implemented on a case-by-case basis and therefore aren`t in the scope of this notebook. If you want to know more, search For Parametric Rectified Linear Units or maybe Exponential Linear Units.
+		act = tf.nn.relu(tf.matmul(i, w) + b)
+		act.eval(session=sess)
+		>>> array([[0.       , 0.       , 4.0462685]], dtype=float32)
+
+
+--------------------------------------------------------------------------------------	-----------------------
+DEEP NEURAL NETWORKS
+1. CNN
+	- Automatic and effective Feature extraction
+	- Convolutional Neural Network - Or CNN For short - is a deep learning approach that learns directly From samples in a way that is much more effective than traditional Neural networks. 
+	- CNNs achieve this type of automatic feature selection and classification through multiple specific layers of sophisticated mathematical operations. Through multiple layers, a CNN learns multiple levels of feature sets at different levels of abstraction. And this leads to very effective classification. 
+	- Machine vision projects, including image recognition Or classification, such As distinguishing animal photos or 
+	- Digit recognition, 
+	- Skin cancer classification. 
+	- Object detection, For example real-time recognition of passengers in images captured by self-driving cars. 
+	- Coloring black and white images, and creating art images.
+
+2. RNN
+	- Modeling sequential data 
+	- Stock Market Data
+	- We simply need to feed the network With the sequential data, it then maintains the context of the data And thus, learns the patterns within the data
+	- Sentiment analysis
+	- Language modeling - Predict the next word in a sentence.
+	- Text translation - Google Translator
+	- Speech-to-text
+
+3. Restricted Boltzmann Machines
+	- Find the patterns in data in an "unsupervised" manner.
+	- Shallow neural nets that learn to reconstruct data by themselves
+	- Unsupervised
+		- Feature extraction
+		- Dimensionality Reduction
+		- Pattern recognition, 
+		- Recommender systems, H
+		- Handling missing values, 
+		- Topic modeling
+
+4. Deep Belief Network
+	- Built on top of RBMs
+	- Solves back-propagation problem, "Local-minima" and "vanishing gradients"
+	- Solve this by the stacking of multiple RBMs
+	- Classification
+		- Image recognition
+		- A very accurate discriminative classifier - As such, we don’t need a big set of labeled data to train a Deep Belief Network; in fact, a small set works fine because feature extraction is unsupervised by a stack of RBMs.
+
+5. Autoencoders
+	- Extracting desirable features
+	- Like RBMs, Autoencoders Try to recreate a given input, but do so With a slightly different network architecture and learning method.
+		- Autoencoders take a set of unlabeled inputs, encodes them into short codes, and then uses those to reconstruct the original image, While extracting the most valuable information From the data.
+		- As the encoder part of the network, Autoencoders compress data From the input layer into a short code -- a method that can be used For               "dimensionality reduction" tasks. 
+		- Also, in stacking multiple Autoencoder layers, the network learns multiple levels of representation at different levels of abstraction. 
+			For example, to detect a face in an image, the network encodes the primitive features, like the edges of a face. Then, the first layer`s output goes to the second Autoencoder, to encode the less local features, like the nose, and so on. Therefore, it can be used for Feature Extraction and image recognition.
+-------------------------------------------------------------------------------------------------------------------
+QUIZ
+@What is a Data Flow Graph?
+ A representation of data dependencies between operations
+
+@Why TensorFlow is proper library for Deep Learning?
+ It will benefit from TensorFlow’s auto-differentiation and suite of first-rate optimizers.  Provides helpful tools to assemble subgraphs common in neural networks and deep learning  TensorFlow has extensive built-in support for deep learning
+
+
+--------------------------------------------------------------------------
 Module 2 – Convolutional Neural Networks (CNN)
 	CNN History
 	Understanding CNNs
