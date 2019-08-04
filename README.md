@@ -5,9 +5,11 @@
 ### 3. Accelerating Deep Learning with GPU<br>
 
 <hr>
+
+## DEEP NEURAL NETWORKS
 <br>
-##DEEP NEURAL NETWORKS
-### 1. CNN<br>
+<strong>1. CNN</strong>
+<br>
 	- Automatic and effective Feature extraction<br>
 	- Convolutional Neural Network - Or CNN For short - is a deep learning approach that learns directly From samples in a way that is much more effective than traditional Neural networks. <br>
 	- CNNs achieve this type of automatic feature selection and classification through multiple specific layers of sophisticated mathematical operations. Through multiple layers, a CNN learns multiple levels of feature sets at different levels of abstraction. And this leads to very effective classification. <br>
@@ -17,7 +19,7 @@
 	- Object detection, For example real-time recognition of passengers in images captured by self-driving cars. <br>
 	- Coloring black and white images, and creating art images.<br>
 <br>
-### 2. RNN<br>
+<strong>2. RNN</strong><br>
 	- Modeling sequential data <br>
 	- Stock Market Data<br>
 	- We simply need to feed the network With the sequential data, it then maintains the context of the data And thus, learns the patterns within the data<br>
@@ -26,7 +28,7 @@
 	- Text translation - Google Translator<br>
 	- Speech-to-text<br>
 <br>
-### 3. Restricted Boltzmann Machines<br>
+<strong>3. Restricted Boltzmann Machines</strong><br>
 	- Find the patterns in data in an "unsupervised" manner.<br>
 	- Shallow neural nets that learn to reconstruct data by themselves<br>
 	- Unsupervised<br>
@@ -37,7 +39,7 @@
 		- Handling missing values, <br>
 		- Topic modeling<br>
 <br>
-### 4. Deep Belief Network<br>
+<strong>4. Deep Belief Network</strong><br>
 	- Built on top of RBMs<br>
 	- Solves back-propagation problem, "Local-minima" and "vanishing gradients"<br>
 	- Solve this by the stacking of multiple RBMs<br>
@@ -45,7 +47,7 @@
 		- Image recognition<br>
 		- A very accurate discriminative classifier - As such, we don’t need a big set of labeled data to train a Deep Belief Network; in fact, a small set works fine because feature extraction is unsupervised by a stack of RBMs.<br>
 <br>
-### 5. Autoencoders<br>
+<strong>5. Autoencoders</strong><br>
 	- Extracting desirable features<br>
 	- Like RBMs, Autoencoders Try to recreate a given input, but do so With a slightly different network architecture and learning method.<br>
 		- Autoencoders take a set of unlabeled inputs, encodes them into short codes, and then uses those to reconstruct the original image, While extracting the most valuable information From the data.<br>
