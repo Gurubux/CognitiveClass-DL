@@ -37,20 +37,352 @@ CNNs for Classification
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------
 CNN Architecture
+CNN_ConvolutionProcess.odt
+	   ∞
+𝑦[𝑛] = ∑   𝑥[𝑘] ⋅ ℎ[𝑛−𝑘]
+	  𝑘→−∞
+
+
+@1-D Calculating Convolution - 2.1-Review-Understanding_Convolutions.ipynb
+h =  2 1 0  : IMAGE
+x =  3 4 5	: Filter
+
+"Inverse the Filter"
+5 4 3
+
+"Move over the Image"
+5 4 3 - - -
+0 0	2 1 0 0 0
+0 0 6 0 0 0 0 = 6
+
+- 5 4 3
+0 0	2 1 0 0 0 
+0 0 8 3 0 0	0 = 11
+
+- - 5 4 3
+0 0	2 1 0 0 0
+0 0 104 0 0 0 = 14
+
+- - - 5 4 3
+0 0	2 1 0 0 0
+0 0 0 5 0 0 0 = 5
+
+- - - - 5 4 3
+0 0	2 1 0 0 0
+0 0 0 0 0 0 0 = 0
+
+h =  2 1 0  : IMAGE
+x =  3 4 5	: Filter
+𝑦 =[ 6 11 14 5 0 ]
+
+𝑦[0]=∑𝑘→−∞∞𝑥[𝑘]⋅ℎ[0−𝑘]=𝑥[0]⋅ℎ[0]=3⋅2=6
+𝑦[1]=∑𝑘→−∞∞𝑥[𝑘]⋅ℎ[1−𝑘]=𝑥[0]⋅ℎ[1−0]+𝑥[1]⋅ℎ[1−1]+ ...=𝑥[0]⋅ℎ[1]+𝑥[1]⋅ℎ[0]=3⋅1+4⋅2=11
+𝑦[2]=∑𝑘→−∞∞𝑥[𝑘]⋅ℎ[2−𝑘]=𝑥[0]⋅ℎ[2−0]+𝑥[1]⋅ℎ[2−1]+𝑥[2]⋅ℎ[2−2]+ ...=𝑥[0]⋅ℎ[2]+𝑥[1]⋅ℎ[1]+𝑥[2]⋅ℎ[0]=3⋅0+4⋅1+5⋅2=14
+𝑦[3]=∑𝑘→−∞∞𝑥[𝑘]⋅ℎ[3−𝑘]=𝑥[0]⋅ℎ[3−0]+𝑥[1]⋅ℎ[3−1]+𝑥[2]⋅ℎ[3−2]+𝑥[3]⋅ℎ[3−3]+ ...=𝑥[0]⋅ℎ[3]+𝑥[1]⋅ℎ[2]+𝑥[2]⋅ℎ[1]+𝑥[3]⋅ℎ[0]=0+0+5⋅1+0=5
+𝑦[4]=∑𝑘→−∞∞𝑥[𝑘]⋅ℎ[4−𝑘]=𝑥[0]⋅ℎ[4−0]+𝑥[1]⋅ℎ[4−1]+𝑥[2]⋅ℎ[4−2]+ ...=0
+
+There are three methods to apply kernel on the matrix, with padding (full), with padding(same) and without padding(valid)
+\full
+h =  2 1 0  : IMAGE
+x =  3 4 5	: Filter
+5 4 3 - - -
+0 0	2 1 0 0 0
+0 0 6 0 0 0 0 = 6
+
+𝑦 =[ 6 11 14 5 0 ]
+
+\same
+h =  2 1 0  : IMAGE
+x =  3 4 5	: Filter
+5 4 3 - - 
+0 0	2 1 0 
+0 0 6 0 0  = 6
+𝑦 =[ 6 11 14 ]
+
+
+\valid
+h =  2 1 0  : IMAGE
+x =  3 4 5	: Filter
+5  4 3 
+2  1 0 
+10 4 0  = 6
+𝑦 =[14 ]
+ import numpy as np
+
+x = [6, 2]
+h = [1, 2, 5, 4]
+
+y = np.convolve(x, h, "valid")   # valid returns output of length max(x, h) - min(x, h) + 1, this is to ensure that values outside of the boundary of 
+                                # h will not be used in the calculation of the convolution
+                                # in the next example we will understand why we used the argument valid
+y  
+----------------------------------------------------------------
+Convolution: 2D operation with Python (Numpy/Scipy)
+The 2D convolution operation is defined as:
+
+𝐼′ = ∑  𝐼(𝑥−𝑢,𝑦−𝑣) 𝑔(𝑢,𝑣)
+	𝑢,𝑣
+
+𝐼 = [ 255	72	3	|
+    | 212	40	4	|
+    | 218	216	230	]
+
+𝑔 = [−1	1]
+
+"Inverse g"
+	[ 1 	-1 ]
+"Move over the Image"
+\full
+	[ 1 -1 ]
+	[ 0  255 72	 3	 0|
+    | 0  212 40  4	 0|
+    | 0  218 216 230 0]
+ = 3 X 4 matrix
+ [[-255  248    4    3]
+ [-212  -28  236    4]
+ [-218    2  -14  230]]
+
+
+\same
+	[ 1 -1 ]
+	[ 0  255 72	 3	|
+    | 0  212 40  4	|
+    | 0  218 216 230]
+ = 3 X 3 matrix
+ [[-255  248    4]
+ [-212  -28  236]
+ [-218    2  -14]]
+
+
+\valid
+	[ 1  -1 ]
+	[ 255 72  3  |
+    | 212 40  4	 |
+    | 218 216 230]
+ = 2 X 2 matrix
+[[248   4]
+ [-28 236]
+ [  2 -14]] 
 
 
 
+EXAMPLE 1. 
+from scipy import signal as sg
+I= [[255,   7,  3],
+    [212, 240,  4],
+    [218, 216, 230],]
+
+g= [[-1, 1]]
+
+print ('With zero padding \n')
+print ('{0} \n'.format(sg.convolve( I, g, 'full')))
+# The output is the full discrete linear convolution of the inputs. 
+# It will use zero to complete the input matrix
+
+print ('With zero padding_same_ \n')
+print ('{0} \n'.format(sg.convolve( I, g, 'same')))
+# The output is the full discrete linear convolution of the inputs. 
+# It will use zero to complete the input matrix
+
+
+print ('Without zero padding \n')
+print (sg.convolve( I, g, 'valid'))
+# The 'valid' argument states that the output consists only of those elements 
+#that do not rely on the zero-padding.
+
+EXAMPLE 2. 
+from scipy import signal as sg
+
+I= [[255,   7,  3],
+    [212, 240,  4],
+    [218, 216, 230],]
+
+g= [[-1,  1],
+    [ 2,  3],]
+
+print ('With zero padding \n')
+print ('{0} \n'.format(sg.convolve( I, g, 'full')))
+# The output is the full discrete linear convolution of the inputs. 
+# It will use zero to complete the input matrix
+
+print ('With zero padding_same_ \n')
+print ('{0} \n'.format(sg.convolve( I, g, 'same')))
+# The output is the full discrete linear convolution of the inputs. 
+# It will use zero to complete the input matrix
+
+
+print ('Without zero padding \n')
+print (sg.convolve( I, g, 'valid'))
+# The 'valid' argument states that the output consists only of those elements 
+#that do not rely on the zero-padding.
 
 
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------
 LAB
+----------------------------------------------------------------------------------------------------------------------------------------------------
+"CODING WITH TENSOR FLOW"
+----------------------------------------------------------------------------------------------------------------------------------------------------
+Suppose that you have two tensors:
+	- 3x3 filter (4D tensor = [3,3,1,1] = [width, height, channels, number of filters])
+	- 10x10 image (4D tensor = [1,10,10,1] = [batch size, width, height, number of channels]
+
+The output size for zero padding 'SAME' mode will be:
+ 	- the same as input = 10x10
+
+The output size without zero padding 'VALID' mode:
+	- input size - kernel dimension + 1 = 10 -3 + 1 = 8 = 8x8
+
+
+import tensorflow as tf
+
+#Building graph
+
+input = tf.Variable(tf.random_normal([1, 10, 10, 1]))
+filter = tf.Variable(tf.random_normal([3, 3, 1, 1]))
+op = tf.nn.conv2d(input, filter, strides=[1, 1, 1, 1], padding='VALID')
+op2 = tf.nn.conv2d(input, filter, strides=[1, 1, 1, 1], padding='SAME')
+#Initialization and session
+init = tf.global_variables_initializer()
+with tf.Session() as sess:
+    sess.run(init)
+
+    print("Input \n")
+    print('{0} \n'.format(input.eval()))
+    print("Filter/Kernel \n")
+    print('{0} \n'.format(filter.eval()))
+    print("Result/Feature Map with valid positions \n")
+    result = sess.run(op)
+    print(result.shape,result) #(1, 8, 8, 1)
+    print('\n')
+    print("Result/Feature Map with SAME padding \n")
+    result2 = sess.run(op2)
+    print(result2.shape,result2) #(1, 10, 10, 1)
+
+
+----------------------------------------------------------------------------------------------------------------------------------------------------
+"CONVOLUTION APPLIED ON IMAGES"
+----------------------------------------------------------------------------------------------------------------------------------------------------
+
+#Importing
+import numpy as np
+from scipy import signal
+from scipy import misc
+import matplotlib.pyplot as plt
+from PIL import Image
+
+im = Image.open('bird.jpg')  # type here your image's name
+
+image_gr = im.convert("L")    # convert("L") translate color images into black and white
+                              # uses the ITU-R 601-2 Luma transform (there are several 
+                              # ways to convert an image to grey scale)
+print("\n Original type: %r \n\n" % image_gr)
+
+# convert image to a matrix with values from 0 to 255 (uint8) 
+arr = np.asarray(image_gr) 
+print("After conversion to numerical representation: \n\n %r" % arr,arr.shape) 
+### Activating matplotlib for Ipython
+%matplotlib inline
+
+### Plot image
+
+imgplot = plt.imshow(arr)
+imgplot.set_cmap('gray')  #you can experiment different colormaps (Greys,winter,autumn)
+print("\n Input image converted to gray scale: \n")
+plt.show(imgplot)
+
+
+\edge detector kernel
+kernel = np.array([[ 0, 1, 0],
+                   [ 1,-4, 1],
+                   [ 0, 1, 0],]) 
+
+grad = signal.convolve2d(arr, kernel, mode='full', boundary='symm')
+print(grad)
+>>>
+[[ 11  11 -14 ...   8   2   2]
+[ 11  11 -14 ...   8   2   2]
+[ -4  -4 -13 ...  -7   2   2]
+...
+[ 16  16   8 ...   0  11  11]
+[-13 -13   1 ...   6  15  15]
+[-13 -13   1 ...   6  15  15]]
+%matplotlib inline
+
+print('GRADIENT MAGNITUDE - Feature map')
+
+fig, aux = plt.subplots(figsize=(10, 10))
+aux.imshow(np.absolute(grad), cmap='gray')
 
 
 
 
+"If we change the kernel and start to analyze the outputs we would be acting as a CNN. The difference is that a Neural Network do all this work automatically (the kernel adjustment using different weights). In addition, we can understand how biases affect the behaviour of feature maps "
+print(type(grad))
+grad_biases = np.absolute(grad) + 100
+grad_biases[grad_biases > 255] = 255
+%matplotlib inline
+
+print('GRADIENT MAGNITUDE - Feature map')
+
+fig, aux = plt.subplots(figsize=(10, 10))
+aux.imshow(np.absolute(grad_biases), cmap='gray')
 
 
+
+"PLEASE NOTE THAT WHEN YOU ARE DEALING WITH MOST OF THE REAL APPLICATIONS OF CNNS, YOU USUALLY CONVERT THE PIXELS VALUES TO A RANGE FROM 0 TO 1. THIS PROCESS IS CALLED NORMALIZATION."
+
+
+----------------------------------------------------------------------------------------------------------------------------------------------------
+"CONVOLUTION APPLIED ON IMAGES-DIGIT"
+----------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+#Importing
+import numpy as np
+from scipy import signal
+from scipy import misc
+import matplotlib.pyplot as plt
+from PIL import Image
+
+im = Image.open('num3.jpg')  # type here your image's name
+
+image_gr = im.convert("L")    # convert("L") translate color images into black and white
+                              # uses the ITU-R 601-2 Luma transform (there are several 
+                              # ways to convert an image to grey scale)
+print("\n Original type: %r \n\n" % image_gr)
+
+# convert image to a matrix with values from 0 to 255 (uint8) 
+arr = np.asarray(image_gr) 
+print("After conversion to numerical representation: \n\n %r" % arr) 
+### Activating matplotlib for Ipython
+%matplotlib inline
+
+### Plot image
+fig, aux = plt.subplots(figsize=(10, 10))
+imgplot = plt.imshow(arr)
+imgplot.set_cmap('gray')  #you can experiment different colormaps (Greys,winter,autumn)
+print("\n Input image converted to gray scale: \n")
+plt.show(imgplot)
+
+\edge detector kernel
+kernel = np.array([
+                        [ 0, 1, 0],
+                        [ 1,-4, 1],
+                        [ 0, 1, 0],
+                                     ]) 
+
+grad = signal.convolve2d(arr, kernel, mode='same', boundary='symm')
+%matplotlib inline
+print(type(grad))
+
+grad_biases = np.absolute(grad) + 100
+
+grad_biases[grad_biases > 255] = 255
+print('GRADIENT MAGNITUDE - Feature map')
+
+fig, aux = plt.subplots(figsize=(10, 10))
+aux.imshow(np.absolute(grad_biases), cmap='gray')
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------
 QUIZ

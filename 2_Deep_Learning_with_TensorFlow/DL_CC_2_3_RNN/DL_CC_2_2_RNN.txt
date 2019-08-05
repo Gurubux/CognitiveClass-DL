@@ -1,7 +1,30 @@
 ----------------------------------------------------------------------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------------------------------------------------------------------
 MODULE 3 – RECURRENT NEURAL NETWORKS (RNN)
-	Intro to RNN Model
-	Long Short-Term memory (LSTM)
-	Recursive Neural Tensor Network Theory
-	Recurrent Neural Network Model
+RNN
+- Modeling sequential data 
+- Stock Market Data
+- We simply need to feed the network With the sequential data, it then maintains the context of the data And thus, learns the patterns within the data
+- Sentiment analysis
+- Language modeling - Predict the next word in a sentence.
+- Text translation - Google Translator
+- Speech-to-text
+
+----------------------------------------------------------------------------------------------------------------------------------------------------
+INTRO TO RNN MODEL
+
+
+
+----------------------------------------------------------------------------------------------------------------------------------------------------
+LONG SHORT-TERM MEMORY (LSTM)
+
+
+
+----------------------------------------------------------------------------------------------------------------------------------------------------
+RECURSIVE NEURAL TENSOR NETWORK THEORY
+
+
+
+
+----------------------------------------------------------------------------------------------------------------------------------------------------
+RECURRENT NEURAL NETWORK MODEL

@@ -1,6 +1,46 @@
 ----------------------------------------------------------------------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------------------------------------------------------------------
 MODULE 4 - UNSUPERVISED LEARNING
-	Applications of Unsupervised Learning
-	Restricted Boltzmann Machine
-	Collaborative Filtering With RBM.
+Restricted Boltzmann Machines
+- Find the patterns in data in an "unsupervised" manner.
+- Shallow neural nets that learn to reconstruct data by themselves
+- Unsupervised
+- Feature extraction
+- Dimensionality Reduction
+- Pattern recognition, 
+- Recommender systems, H
+- Handling missing values, 
+- Topic modeling
+Deep Belief Network
+- Built on top of RBMs
+- Solves back-propagation problem, "Local-minima" and "vanishing gradients"
+- Solve this by the stacking of multiple RBMs
+- Classification
+- Image recognition
+- A very accurate discriminative classifier - As such, we don’t need a big set of labeled data to train a Deep Belief Network; in fact, a small set works fine because feature extraction is unsupervised by a stack of RBMs.
+
+
+----------------------------------------------------------------------------------------------------------------------------------------------------
+APPLICATIONS OF UNSUPERVISED LEARNING
+
+
+
+
+
+
+----------------------------------------------------------------------------------------------------------------------------------------------------
+RESTRICTED BOLTZMANN MACHINE
+
+
+
+
+
+
+----------------------------------------------------------------------------------------------------------------------------------------------------
+COLLABORATIVE FILTERING WITH RBM.
+
+
+
+
+
+
