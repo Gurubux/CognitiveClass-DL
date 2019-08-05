@@ -384,5 +384,301 @@ print('GRADIENT MAGNITUDE - Feature map')
 fig, aux = plt.subplots(figsize=(10, 10))
 aux.imshow(np.absolute(grad_biases), cmap='gray')
 
+
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ MNIST @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+----------------------------------------------------------------------------------------------------------------------------
+1st PART: "CLASSIFY MNIST USING A SIMPLE(Multi-layer perceptron) MODEL."
+@Creating an interactive section
+@Creating placeholders
+@Assigning bias and weights to null tensors
+@Execute the assignment operation
+@Adding Weights and Biases to input
+@Softmax Regression
+@Cost function
+@Type of optimization_Gradient Descent
+@Training batches	
+@Test
+@Evaluating the final result
+----------------------------------------------------------------------------------------------------------------------------
+@What is MNIST?
+Import the MNIST dataset using TensorFlow built-in feature
+	from tensorflow.examples.tutorials.mnist import input_data
+	mnist = input_data.read_data_sets("MNIST_data/", one_hot=True)
+
+@Understanding the imported data
+	mnist.train
+	mnist.validation
+	mnist.test
+
+#@Creating an interactive section
+#You have two basic options when using TensorFlow to run your code:
+#	- [Build graphs and run session] Do all the set-up and THEN execute a session to evaluate tensors and run operations (ops)
+#	- [Interactive session] create your coding and run on the fly.
+#For this first part, we will use the interactive session that is more suitable for environments like Jupyter notebooks.
+	sess = tf.InteractiveSession()
+
+#@Creating placeholders
+	x  = tf.placeholder(tf.float32, shape=[None, 784])
+	y_ = tf.placeholder(tf.float32, shape=[None, 10])
+#@Assigning bias and weights to null tensors
+	# Weight tensor
+	W = tf.Variable(tf.zeros([784, 10],tf.float32))
+	# Bias tensor
+	b = tf.Variable(tf.zeros([10],tf.float32))
+
+
+#Execute the assignment operation
+# run the op initialize_all_variables using an interactive session
+	sess.run(tf.global_variables_initializer())
+#Adding Weights and Biases to input
+# mathematical operation to add weights and biases to the inputs
+	tf.matmul(x,W) + b #<tf.Tensor 'add:0' shape=(?, 10) dtype=float32>
+
+#Softmax Regression
+	y = tf.nn.softmax(tf.matmul(x,W) + b) #It generate the probabilities for the output. 
+#Cost function
+	cross_entropy = tf.reduce_mean(-tf.reduce_sum(y_ * tf.log(y), reduction_indices=[1]))
+	# tf.nn.softmax_cross_entropy_with_logits()
+	#reduce_sum computes the sum of elements of (y_ * tf.log(layer4) across second dimension of the tensor, and reduce_mean computes the mean of all elements in the tensor..
+#Type of optimization_Gradient Descent
+	train_step = tf.train.GradientDescentOptimizer(0.5).minimize(cross_entropy)
+#Training batches	
+	#Train using minibatch Gradient Descent.
+	#Load 50 training examples for each training iteration   
+	for i in range(1000):
+	    batch = mnist.train.next_batch(50)
+	    train_step.run(feed_dict={x: batch[0], y_: batch[1]})
+#Test
+	correct_prediction = tf.equal(tf.argmax(y, 1), tf.argmax(y_, 1))
+	accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
+	acc = accuracy.eval(feed_dict={x: mnist.test.images, y_: mnist.test.labels}) * 100
+	print("The final accuracy for the simple ANN model is: {} % ".format(acc) )
+	>>>The final accuracy for the simple ANN model is: 90.65999984741211 % 
+#Evaluating the final result
+
+#How to improve our model?
+Several options as follow:
+	- Regularization of Neural Networks using DropConnect
+	- Multi-column Deep Neural Networks for Image Classification
+	- APAC: Augmented Pattern Classification with Neural Networks
+	- Simple Deep Neural Network with Dropout
+In the next part we are going to explore the option:
+	- Simple Deep Neural Network with Dropout - (more than 1 hidden layer)
+
+
+
+----------------------------------------------------------------------------------------------------------------------------
+2nd PART: "DEEP LEARNING APPLIED ON MNIST"
+----------------------------------------------------------------------------------------------------------------------------
+@Initial parameters
+@Input and output
+@Convolutional Layer 1
+	@Defining kernel weight and bias
+	@Apply the ReLU activation Function
+	@Apply the max pooling
+@Convolutional Layer 2
+	@Weights and Biases of kernels
+	@Apply the ReLU activation Function
+	@Apply the max pooling
+@Fully Connected Layer
+	@Apply the ReLU activation Function
+@Dropout Layer. Optional phase for reducing overfitting
+@Readout Layer (Softmax Layer)
+	@Apply the Softmax activation Function
+----------------------------------------------------------------------------------------------------------------------------
+Architecture of our network is:
+	(Input) -> [batch_size, 28, 28, 1] >> Apply 32 filter of [5x5]
+	(Convolutional layer 1) -> [batch_size, 28, 28, 32]
+	(ReLU 1) -> [?, 28, 28, 32]
+	(Max pooling 1) -> [?, 14, 14, 32]
+	(Convolutional layer 2) -> [?, 14, 14, 64]
+	(ReLU 2) -> [?, 14, 14, 64]
+	(Max pooling 2) -> [?, 7, 7, 64]
+	[fully connected layer 3] -> [1x1024]
+	[ReLU 3] -> [1x1024]
+	[Drop out] -> [1x1024]
+	[fully connected layer 4] -> [1x10]
+
+
+	import tensorflow as tf
+	# finish possible remaining session	
+	sess.close()
+	#Start interactive session	
+	sess = tf.InteractiveSession()
+
+	from tensorflow.examples.tutorials.mnist import input_data
+	mnist = input_data.read_data_sets('MNIST_data', one_hot=True)
+
+
+
+@Initial parameters
+	width = 28 # width of the image in pixels 
+	height = 28 # height of the image in pixels
+	flat = width * height # number of pixels in one image 
+	class_output = 10 # number of possible classifications for the problem
+@Input and output
+	x  = tf.placeholder(tf.float32, shape=[None, flat])
+	y_ = tf.placeholder(tf.float32, shape=[None, class_output])
+	#Converting images of the data set to tensors. 
+	x_image = tf.reshape(x, [-1,28,28,1])  
+	<tf.Tensor 'Reshape:0' shape=(?, 28, 28, 1) dtype=float32>
+@Convolutional Layer 1
+
+	@Defining kernel weight and bias
+	#The Size of the filter/kernel is 5x5. Input channels is 1 (grayscale); and we need 32 different feature maps (here, 32 feature maps means 32 different filters are applied on each image. So, the output of convolution layer would be 28x28x32). In this step, we create a filter / kernel tensor of shape [filter_height, filter_width, in_channels, out_channels]
+	W_conv1 = tf.Variable(tf.truncated_normal([5, 5, 1, 32], stddev=0.1))
+	b_conv1 = tf.Variable(tf.constant(0.1, shape=[32])) # need 32 biases for 32 outputs
+
+	#Convolve with weight tensor and add biases.
+	convolve1= tf.nn.conv2d(x_image, W_conv1, strides=[1, 1, 1, 1], padding='SAME') + b_conv1
+	#A Tensor (a 2-D convolution) of size tf.Tensor 'add_7:0' shape=(?, 28, 28, 32)- Notice: the output of the first convolution layer is 32 [28x28] images. Here 32 is considered as volume/depth of the output image.
+
+
+	@Apply the ReLU activation Function
+	h_conv1 = tf.nn.relu(convolve1)
+	
+	@Apply the max pooling
+	conv1 = tf.nn.max_pool(h_conv1, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding='SAME') #max_pool_2x2
+	>>> <tf.Tensor 'MaxPool:0' shape=(?, 14, 14, 32) dtype=float32>
+@Convolutional Layer 2
+
+	@Weights and Biases of kernels
+	W_conv2 = tf.Variable(tf.truncated_normal([5, 5, 32, 64], stddev=0.1))
+	b_conv2 = tf.Variable(tf.constant(0.1, shape=[64])) #need 64 biases for 64 outputs
+	convolve2= tf.nn.conv2d(conv1, W_conv2, strides=[1, 1, 1, 1], padding='SAME') + b_conv2
+	#the convolution result of applying a filter of size [5x5x32] on image of size [14x14x32] is an image of size [14x14x1], that is, the convolution is functioning on volume.
+	@Apply the ReLU activation Function
+	h_conv2 = tf.nn.relu(convolve2)
+	@Apply the max pooling
+	conv2 = tf.nn.max_pool(h_conv2, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding='SAME') #max_pool_2x2
+	>>><tf.Tensor 'MaxPool_1:0' shape=(?, 7, 7, 64) dtype=float32>
+
+	#Second layer completed. So, what is the output of the second layer, layer2? it is 64 matrix of [7x7]
+
+
+
+@Fully Connected Layer
+	@Flattening Second Layer
+	layer2_matrix = tf.reshape(conv2, [-1, 7 * 7 * 64])
+
+	@Weights and Biases between layer 2 and 3
+	W_fc1 = tf.Variable(tf.truncated_normal([7 * 7 * 64, 1024], stddev=0.1))
+	b_fc1 = tf.Variable(tf.constant(0.1, shape=[1024])) # need 1024 biases for 1024 outputs
+
+	@Matrix Multiplication (applying weights and biases)
+	fcl = tf.matmul(layer2_matrix, W_fc1) + b_fc1
+	
+	@Apply the ReLU activation Function
+	h_fc1 = tf.nn.relu(fcl)
+	>>> <tf.Tensor 'Relu_2:0' shape=(?, 1024) dtype=float32>
+
+@Dropout Layer. Optional phase for reducing overfitting
+	keep_prob = tf.placeholder(tf.float32)
+	layer_drop = tf.nn.dropout(h_fc1, keep_prob)
+	>>> <tf.Tensor 'dropout/mul:0' shape=(?, 1024) dtype=float32>
+
+@Readout Layer (Softmax Layer)
+	@Matrix Multiplication (applying weights and biases)
+	W_fc2 = tf.Variable(tf.truncated_normal([1024, 10], stddev=0.1)) #1024 neurons
+	b_fc2 = tf.Variable(tf.constant(0.1, shape=[10])) # 10 possibilities for digits [0,1,2,3,4,5,6,7,8,9]
+	fc=tf.matmul(layer_drop, W_fc2) + b_fc2
+	
+	@Apply the Softmax activation Function
+	y_CNN= tf.nn.softmax(fc)
+	>>> <tf.Tensor 'Softmax_1:0' shape=(?, 10) dtype=float32>
+
+
+
+----------------------------------------------------------------------------------------------------------------------------
+Summary of the Deep Convolutional Neural Network
+0) Input - MNIST dataset
+1) Convolutional and Max-Pooling
+2) Convolutional and Max-Pooling
+3) Fully Connected Layer
+4) Processing - Dropout
+5) Readout layer - Fully Connected
+6) Outputs - Classified digits
+
+----------------------------------------------------------------------------------------------------------------------------
+"DEFINE FUNCTIONS AND TRAIN THE MODEL"
+@Define the loss function
+@Define the optimizer
+@Define prediction
+@Define accuracy
+@Run session_ train
+----------------------------------------------------------------------------------------------------------------------------
+@Define the loss function
+	cross_entropy = tf.reduce_mean(-tf.reduce_sum(y_ * tf.log(y_CNN), reduction_indices=[1]))
+@Define the optimizer
+	train_step = tf.train.AdamOptimizer(1e-4).minimize(cross_entropy)
+@Define prediction
+	correct_prediction = tf.equal(tf.argmax(y_CNN, 1), tf.argmax(y_, 1))
+@Define accuracy
+	accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
+@Run session, train
+	sess.run(tf.global_variables_initializer())
+
+
+	for i in range(1100):
+    	batch = mnist.train.next_batch(50)
+    	if i%100 == 0:
+    	    train_accuracy = accuracy.eval(feed_dict={x:batch[0], y_: batch[1], keep_prob: 1.0})
+    	    print("step %d, training accuracy %g"%(i, float(train_accuracy)))
+    	train_step.run(feed_dict={x: batch[0], y_: batch[1], keep_prob: 0.5})
+    	>>>>
+    	step 0, training accuracy 0.02
+		step 100, training accuracy 0.88
+		step 200, training accuracy 0.84
+		step 300, training accuracy 0.9
+		step 400, training accuracy 0.98
+		step 500, training accuracy 0.98
+		step 600, training accuracy 0.92
+		step 700, training accuracy 0.96
+		step 800, training accuracy 0.98
+		step 900, training accuracy 1
+		step 1000, training accuracy 0.98
+----------------------------------------------------------------------------------------------------------------------------
+"EVALUATE THE MODEL"
+----------------------------------------------------------------------------------------------------------------------------
+# evaluate in batches to avoid out-of-memory issues
+n_batches = mnist.test.images.shape[0] // 50
+cumulative_accuracy = 0.0
+for index in range(n_batches):
+    batch = mnist.test.next_batch(50)
+    cumulative_accuracy += accuracy.eval(feed_dict={x: batch[0], y_: batch[1], keep_prob: 1.0})
+print("test accuracy {}".format(cumulative_accuracy / n_batches))
+
+
+----------------------------------------------------------------------------------------------------------------------------
+"VISUALIZATION"
+----------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+
+
 ----------------------------------------------------------------------------------------------------------------------------------------------------
 QUIZ
+What can be achieved with "Convolution" operation on Images?
+	- Noise Filtering  
+	- Image Smoothing  
+	- Image Blurring  
+	- Edge Detection
+
+For convolution, it is better to store Images in TensorFlow Graph as:
+	Placeholder 
+
+Which of the following statements is TRUE about Convolution Neural Networks (CNN)?
+	CNN can be applied on ANY 2D and 3D array of data. 
+
+Which of the following Layers can be part of Convolution Neural Networks (CNN)
+	- Dropout  
+	- Softmax  
+	- Maxpooling  
+	- Relu
+
+Objective of Activation Function is to:
+	Handle Non-Linearity in the Network
+
