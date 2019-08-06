@@ -1,6 +1,12 @@
 ----------------------------------------------------------------------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------------------------------------------------------------------
 MODULE 3 – RECURRENT NEURAL NETWORKS (RNN)
+Learning Objective 
+	The Recurrent Neural Network Model-(RNN)
+	Long Short-Term Memory-(LSTM)
+	Recursive Neural Tensor Network Theory-(RNTN)
+	Applying Recurrent Networks to Language Modelling
+
 RNN
 - Modeling sequential data 
 - Stock Market Data
@@ -11,20 +17,31 @@ RNN
 - Speech-to-text
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------
-INTRO TO RNN MODEL
+The Sequential Problem
 
 
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------
-LONG SHORT-TERM MEMORY (LSTM)
+The RNN Model
 
 
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------
-RECURSIVE NEURAL TENSOR NETWORK THEORY
+LONG SHORT-TERM MEMORY- (LSTM) model
 
 
 
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------
-RECURRENT NEURAL NETWORK MODEL
+RNN model TO LANGUAGE MODELLING
+
+
+
+
+---------------------------------------------------------------------------------------------------------------
+LABS
+
+3.1-Reveiw-LSTM-basics
+3.2-Review-LSTM-LanguageModelling
+3.3-Review-LSTM-CharacterModelling
+3.4-Review-LSTM-MNIST-Database
