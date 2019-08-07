@@ -23,7 +23,31 @@ Deep Belief Network
 ----------------------------------------------------------------------------------------------------------------------------------------------------
 INTRO TO RBMS
 
+"INTRODUCTION"
+Restricted Boltzmann Machine (RBM): RBMs are shallow neural nets that learn to reconstruct data by themselves in an unsupervised fashion.
 
+"WHY ARE RBMS IMPORTANT?"
+It can automatically extract meaningful features from a given input.
+
+"HOW DOES IT WORK?"
+RBM is a 2 layer neural network. Simply, RBM takes the inputs and translates those into a set of binary values that represents them in the hidden layer. Then, these numbers can be translated back to reconstruct the inputs. Through several forward and backward passes, the RBM will be trained, and a trained RBM can reveal which features are the most important ones when detecting patterns.
+
+"WHAT ARE THE APPLICATIONS OF RBM?"
+RBM is useful for Collaborative Filtering, dimensionality reduction, classification, regression, feature learning, topic modeling and even Deep Belief Networks
+
+"IS RBM A GENERATIVE OR DISCRIMINATIVE MODEL?"
+RBM is a generative model. Let me explain it by first, see what is different between discriminative and generative models:
+	- Discriminative: Consider a classification problem in which we want to learn to distinguish between Sedan cars (y = 1) and SUV cars (y = 0), based on some features of cars. Given a training set, an algorithm like logistic regression tries to find a straight line—that is, a decision boundary—that separates the suv and sedan.
+	- Generative: looking at cars, we can build a model of what Sedan cars look like. Then, looking at SUVs, we can build a separate model of what SUV cars look like. Finally, to classify a new car, we can match the new car against the Sedan model, and match it against the SUV model, to see whether the new car looks more like the SUV or Sedan.
+
+Generative Models specify a probability distribution over a dataset of input vectors. We can do both supervise and unsupervised tasks with generative models:
+	- In an unsupervised task, we try to form a model for P(x), where P is the probability given x as an input vector.
+	- In the supervised task, we first form a model for P(x|y), where P is the probability of x given y(the label for x). For example, if y = 0 indicates whether a car is a SUV or y = 1 indicates indicate a car is a Sedan, then p(x|y = 0) models the distribution of SUVs’ features, and p(x|y = 1) models the distribution of Sedans’ features. If we manage to find P(x|y) and P(y), then we can use Bayes rule to estimate P(y|x), because:
+	𝑝(𝑦|𝑥)=𝑝(𝑥|𝑦)𝑝(𝑦)𝑝(𝑥)
+ 
+
+
+"Now the question is, can we build a generative model, and then use it to create synthetic data by directly sampling from the modeled probability distributions? Lets see."
 
 
 
@@ -45,6 +69,179 @@ COLLABORATIVE FILTERING WITH RBM.
 ----------------------------------------------------------------------------------------------------------------------------------------------------
 LABS
 4.1-Review-RBMMNIST
+"""An RBM has two layers. The first layer of the RBM is called the visible (or input layer). Imagine that our toy example, has only vectors with 7 values, so the visible layer must have j=7 input nodes. The second layer is the hidden layer, which possesses i neurons in our case. Each hidden node can have either 0 or 1 values (i.e., si = 1 or si = 0) with a probability that is a logistic function of the inputs it receives from the other j visible units, called for example, p(si = 1). For our toy sample, we'll use 2 nodes in the hidden layer, so i = 2."""
+"https://raw.githubusercontent.com/Gurubux/CognitiveClass-DL/master/2_Deep_Learning_with_TensorFlow/DL_CC_2_4_RBM/RBM%20Model_.png"
+
+#Each node in the first layer also has a bias. We will denote the bias as “v_bias” for the visible units. The v_bias is shared among all visible units.
+#Here we define the bias of second layer as well. We will denote the bias as “h_bias” for the hidden units. The h_bias is shared among all hidden units
+v_bias = tf.placeholder("float", [7])
+h_bias = tf.placeholder("float", [2])
+
+"""We have to define weights among the input layer and hidden layer nodes. In the weight matrix, the number of rows are equal to the input nodes, and the number of columns are equal to the output nodes. Let W be the Tensor of 7x2 (7 - number of visible neurons, 2 - number of hidden neurons) that represents weights between neurons."""
+W = tf.constant(np.random.normal(loc=0.0, scale=1.0, size=(7, 2)).astype(np.float32))
+
+"""What RBM can do after training?
+Think RBM as a model that has been trained based on images of a dataset of many SUV and Sedan cars. Also, imagine that the RBM network has only two hidden nodes, one for the weight and, and one for the size of cars, which in a sense, their different configurations represent different cars, one represent SUV cars and one for Sedan. In a training process, through many forward and backward passes, RBM adjust its weights to send a stronger signal to either the SUV node (0, 1) or the Sedan node (1, 0) in the hidden layer, given the pixels of images. Now, given a SUV in hidden layer, which distribution of pixels should we expect? RBM can give you 2 things. First, it encodes your images in hidden layer. Second, it gives you the probability of observing a case, given some hidden values."""
+"FORWARD PASS- EXAMPLE"
+"""
+Phase 1) Forward pass: Input one training sample (one image) X through all visible nodes, and pass it to all hidden nodes. Processing happens in each node in the hidden layer. This computation begins by making stochastic decisions about whether to transmit that input or not (i.e. to determine the state of each hidden layer). At the hidden layer's nodes, X is multiplied by a  𝑊𝑖𝑗  and added to h_bias. The result of those two operations is fed into the sigmoid function, which produces the node’s output,  𝑝(ℎ𝑗) , where j is the unit number.
+
+𝑝(ℎ𝑗)=𝜎(∑𝑖𝑤𝑖𝑗𝑥𝑖) , where  𝜎()  is the logistic function.
+
+Now lets see what  𝑝(ℎ𝑗)  represents. In fact, it is the probabilities of the hidden units. And, all values together are called probability distribution. That is, RBM uses inputs x to make predictions about hidden node activations. For example, imagine that the values of  ℎ𝑝  for the first training item is [0.51 0.84]. It tells you what is the conditional probability for each hidden neuron to be at Phase 1):
+
+p( ℎ1  = 1|V) = 0.51
+( ℎ2  = 1|V) = 0.84
+As a result, for each row in the training set, a vector/tensor is generated, which in our case it is of size [1x2], and totally n vectors ( 𝑝(ℎ) =[nx2]).
+
+We then turn unit  ℎ𝑗  on with probability  𝑝(ℎ𝑗|𝑉) , and turn it off with probability  1−𝑝(ℎ𝑗|𝑉) .
+
+Therefore, the conditional probability of a configuration of h given v (for a training sample) is:
+
+𝑝(𝐡∣𝐯)=∏𝑗=0𝐻𝑝(ℎ𝑗∣𝐯)
+ 
+Now, sample a hidden activation vector h from this probability distribution  𝑝(ℎ𝑗) . That is, we sample the activation vector from the probability distribution of hidden layer values.
+
+Before we go further, let's look at a toy example for one case out of all input. Assume that we have a trained RBM, and a very simple input vector such as [1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0], lets see what would be the output of forward pass:
+"""
+
+sess = tf.Session()
+X = tf.constant([[1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0]])
+v_state = X
+print ("Input: ", sess.run(v_state))
+
+h_bias = tf.constant([0.1, 0.1])
+print ("hb: ", sess.run(h_bias))
+print ("w: ", sess.run(W))
+
+# Calculate the probabilities of turning the hidden units on:
+h_prob = tf.nn.sigmoid(tf.matmul(v_state, W) + h_bias)  #probabilities of the hidden units
+print ("p(h|v): ", sess.run(h_prob))
+
+print(sess.run(tf.shape(h_prob)),sess.run(tf.random_uniform(tf.shape(h_prob))))
+print("tf.sign(h_prob - tf.random_uniform(tf.shape(h_prob)))--> ",sess.run(tf.sign(h_prob - tf.random_uniform(tf.shape(h_prob)))))
+# Draw samples from the distribution:
+h_state = tf.nn.relu(tf.sign(h_prob - tf.random_uniform(tf.shape(h_prob)))) #states
+print ("h0 states:", sess.run(h_state))
+>>>
+Input:  [[1. 0. 0. 1. 0. 0. 0.]]
+hb:  [0.1 0.1]
+w:  [[ 0.6706064   0.60742325]
+ [-0.13637309 -0.96916723]
+ [-0.9486356   0.7280032 ]
+ [ 0.21499676  0.94692266]
+ [ 0.21739139 -0.02056309]
+ [-0.3884501  -1.3380241 ]
+ [-0.3197343  -1.3242232 ]]
+p(h|v):  [[0.7282186  0.83947754]]
+[1 2] [[0.73173964 0.54673374]]
+tf.sign(h_prob - tf.random_uniform(tf.shape(h_prob)))-->  [[-1.  1.]]
+h0 states: [[0. 1.]]
+
+"BACKWARD PASS (RECONSTRUCTION)- EXAMPLE"
+"""Phase 2) Backward Pass (Reconstruction): The RBM reconstructs data by making several forward and backward passes between the visible and hidden layers.
+
+So, in the second phase (i.e. reconstruction phase), the samples from the hidden layer (i.e. h) play the role of input. That is, h becomes the input in the backward pass. The same weight matrix and visible layer biases are used to go through the sigmoid function. The produced output is a reconstruction which is an approximation of the original input."""
+vb = tf.constant([0.1, 0.2, 0.1, 0.1, 0.1, 0.2, 0.1])
+print ("b: ", sess.run(vb))
+
+#   σ[ ([[0. 1.]] * W) + vb ]
+v_prob = sess.run(tf.nn.sigmoid(tf.matmul(h_state, tf.transpose(W)) + vb))
+print ("p(vi∣h): ", v_prob)
+
+v_state = tf.nn.relu(tf.sign(v_prob - tf.random_uniform(tf.shape(v_prob))))
+print ("v probability states: ", sess.run(v_state))
+
+>>>
+b:  [0.1 0.2 0.1 0.1 0.1 0.2 0.1]
+p(vi∣h):  [[0.73767453 0.38724554 0.71199036 0.32375377 0.4309596  0.08817312
+  0.28142536]]
+v probability states:  [[1. 1. 1. 0. 0. 0. 0.]]
+
+inp = sess.run(X)
+print(inp)
+print(v_prob[0])
+v_probability = 1
+for elm, p in zip(inp[0],v_prob[0]) :
+    if elm ==1:
+        v_probability *= p
+    else:
+        v_probability *= (1-p)
+v_probability
+
+[[1. 0. 0. 1. 0. 0. 0.]]
+[0.73767453 0.38724554 0.71199036 0.32375377 0.4309596  0.08817312
+ 0.28142536]
+0.01571449808851681
+--------------------------------------------------------------------------------------------------------------------------------------
+\MNIST
+#MNIST images have 784 pixels, so the visible layer must have 784 input nodes. For our case, we'll use 50 nodes in the hidden layer, so i = 50.
+vb = tf.placeholder("float", [784])
+hb = tf.placeholder("float", [50])
+
+#Let W be the Tensor of 784x50 (784 - number of visible neurons, 50 - number of hidden neurons) that represents weights between the neurons.
+W = tf.placeholder("float", [784, 50])
+
+#visible layer
+v0_state = tf.placeholder("float", [None, 784])
+
+#hidden layer
+h0_prob = tf.nn.sigmoid(tf.matmul(v0_state, W) + hb)  #probabilities of the hidden units
+h0_state = tf.nn.relu(tf.sign(h0_prob - tf.random_uniform(tf.shape(h0_prob)))) #sample_h_given_X
+
+#define reconstruction part
+v1_prob = tf.nn.sigmoid(tf.matmul(h0_state, tf.transpose(W)) + vb) 
+v1_state = tf.nn.relu(tf.sign(v1_prob - tf.random_uniform(tf.shape(v1_prob)))) #sample_v_given_h
+
+
+
+\What is objective function?
+"Goal": Maximize the likelihood of our data being drawn from that distribution
+"Calculate error":
+	In each epoch, we compute the "error" as a sum of the squared difference between step 1 and step n, e.g the error shows the difference between the data and its reconstruction.
+
+"Note": tf.reduce_mean computes the mean of elements across dimensions of a tensor.
+
+This cannot be easily done by typical gradient descent (SGD), so we can use another approach, which has 2 steps:
+	- Gibbs Sampling
+	- Contrastive Divergence
+
+"GIBBS SAMPLING"
+First, given an input vector v we are using p(h|v) for prediction of the hidden values h.
+𝑝(ℎ|𝑣)=𝑠𝑖𝑔𝑚𝑜𝑖𝑑(𝑋⊗𝑊+ℎ𝑏) 
+h0 = sampleProb(h0)
+Then, knowing the hidden values, we use p(v|h) for reconstructing of new input values v.
+
+𝑝(𝑣|ℎ)=𝑠𝑖𝑔𝑚𝑜𝑖𝑑(ℎ0⊗𝑡𝑟𝑎𝑛𝑠𝑝𝑜𝑠𝑒(𝑊)+𝑣𝑏) 
+𝑣1=𝑠𝑎𝑚𝑝𝑙𝑒𝑃𝑟𝑜𝑏(𝑣1)  (Sample v given h)
+This process is repeated k times. After k iterations we obtain an other input vector vk which was recreated from original input values v0 or X.
+
+
+"CONTRASTIVE DIVERGENCE (CD-K)"
+The update of the weight matrix is done during the Contrastive Divergence step.
+Vectors v0 and vk are used to calculate the activation probabilities for hidden values h0 and hk. The difference between the outer products of those probabilities with input vectors v0 and vk results in the update matrix:
+
+Δ𝑊=𝑣0⊗ℎ0−𝑣𝑘⊗ℎ𝑘 
+
+Contrastive Divergence is actually matrix of values that is computed and used to adjust values of the W matrix. Changing W incrementally leads to training of W values. Then on each step (epoch), W is updated to a new value W' through the equation below:
+
+𝑊′=𝑊+𝑎𝑙𝑝ℎ𝑎∗Δ𝑊
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 4.2-Review-CollaborativeFilteringwithRBM
 
 
