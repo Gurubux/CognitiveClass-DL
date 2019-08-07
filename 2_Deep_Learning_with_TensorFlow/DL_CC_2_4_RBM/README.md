@@ -44,3 +44,11 @@ The second layer is the <b>hidden</b> layer, which possesses i neurons in our ca
 Each node in the first layer also has a <b>bias</b>. We will denote the bias as “v_bias” for the visible units. The <b>v_bias</b> is shared among all visible units.
 
 Here we define the <b>bias</b> of second layer as well. We will denote the bias as “h_bias” for the hidden units. The <b>h_bias</b> is shared among all hidden units
+
+
+<h2>RBM for Recommendation System(Collaborative Filtering)</h2>
+<img src="https://raw.githubusercontent.com/Gurubux/CognitiveClass-DL/master/2_Deep_Learning_with_TensorFlow/DL_CC_2_4_RBM/RBM_CollabFilter_movie_recommendation.png"  width="300">
+<br>
+The Restricted Boltzmann Machine model has two layers of neurons, one of which is what we call a visible input layer and the other is called a hidden layer. The hidden layer is used to learn features from the information fed through the input layer. For our model, the input is going to contain X neurons, where X is the amount of movies in our dataset. Each of these neurons will possess a normalized rating value varying from 0 to 1, where 0 meaning that a user has not watched that movie and the closer the value is to 1, the more the user likes the movie that neuron's representing. These normalized values, of course, will be extracted and normalized from the ratings dataset.
+
+After passing in the input, we train the RBM on it and have the hidden layer learn its features. These features are what we use to reconstruct the input, which in our case, will predict the ratings for movies that user hasn't watched, which is exactly what we can use to recommend movies!
