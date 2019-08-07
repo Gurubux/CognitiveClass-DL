@@ -20,10 +20,133 @@ INTRODUCTION
 
 
 
-
-
----------------------------------------------------------------------------------------------------------------------------------------------------- TO AUTOENCODERS AND APPLICATIONS
+----------------------------------------------------------------------------------------------------------------------------------------------------
+-------------------------------------------------------AUTOENCODERS AND APPLICATIONS---------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------------------------------------------------------- 
 AUTOENCODERS
+5.1-Review-Autoencoders
+----------------------------------------------------------------------------------------------------------------------------------------------------
+\Parameters
+learning_rate = 0.01
+training_epochs = 20
+batch_size = 256
+display_step = 1
+examples_to_show = 10
+
+# Network Parameters
+n_hidden_1 = 256 # 1st layer num features
+n_hidden_2 = 128 # 2nd layer num features
+n_input = 784 # MNIST data input (img shape: 28*28)
+
+# tf Graph input (only pictures)
+X = tf.placeholder("float", [None, n_input])
+
+weights = {
+    'encoder_h1': tf.Variable(tf.random_normal([n_input, n_hidden_1])),
+    'encoder_h2': tf.Variable(tf.random_normal([n_hidden_1, n_hidden_2])),
+    'decoder_h1': tf.Variable(tf.random_normal([n_hidden_2, n_hidden_1])),
+    'decoder_h2': tf.Variable(tf.random_normal([n_hidden_1, n_input])),
+}
+biases = {
+    'encoder_b1': tf.Variable(tf.random_normal([n_hidden_1])),
+    'encoder_b2': tf.Variable(tf.random_normal([n_hidden_2])),
+    'decoder_b1': tf.Variable(tf.random_normal([n_hidden_1])),
+    'decoder_b2': tf.Variable(tf.random_normal([n_input])),
+}
+
+
+\# Building the encoder
+def encoder(x):
+    # Encoder first layer with sigmoid activation #1
+    layer_1 = tf.nn.sigmoid(tf.add(tf.matmul(x, weights['encoder_h1']), biases['encoder_b1']))
+    # Encoder second layer with sigmoid activation #2
+    layer_2 = tf.nn.sigmoid(tf.add(tf.matmul(layer_1, weights['encoder_h2']), biases['encoder_b2']))
+    return layer_2
+
+\# Building the decoder
+def decoder(x):
+    # Decoder first layer with sigmoid activation #1
+    layer_1 = tf.nn.sigmoid(tf.add(tf.matmul(x, weights['decoder_h1']),biases['decoder_b1']))
+    # Decoder second layer with sigmoid activation #2
+    layer_2 = tf.nn.sigmoid(tf.add(tf.matmul(layer_1, weights['decoder_h2']), biases['decoder_b2']))
+    return layer_2
+
+\# Construct model
+encoder_op = encoder(X)
+decoder_op = decoder(encoder_op)
+
+# Reconstructed Images
+y_pred = decoder_op
+# Targets (Labels) are the input data.
+y_true = X
+
+# Define loss and optimizer, minimize the squared error
+cost = tf.reduce_mean(tf.pow(y_true - y_pred, 2))
+optimizer = tf.train.RMSPropOptimizer(learning_rate).minimize(cost)
+
+# Initializing the variables
+init = tf.global_variables_initializer()
+
+\# Launch the graph
+# Using InteractiveSession (more convenient while using Notebooks)
+sess = tf.InteractiveSession()
+sess.run(init)
+
+total_batch = int(mnist.train.num_examples / batch_size)
+# Training cycle
+for epoch in range(training_epochs):
+    # Loop over all batches
+    for i in range(total_batch):
+        batch_xs, batch_ys = mnist.train.next_batch(batch_size)
+        # Run optimization op (backprop) and cost op (to get loss value)
+        _, c = sess.run([optimizer, cost], feed_dict={X: batch_xs})
+    # Display logs per epoch step
+    if epoch % display_step == 0:
+        print("Epoch:", '%04d' % (epoch+1),
+              "cost=", "{:.9f}".format(c))
+
+print("Optimization Finished!")
+>>>
+Epoch: 0001 cost= 0.228068203
+Epoch: 0002 cost= 0.195044845
+Epoch: 0003 cost= 0.175554320
+Epoch: 0004 cost= 0.164482921
+Epoch: 0005 cost= 0.154641598
+Epoch: 0006 cost= 0.149336860
+Epoch: 0007 cost= 0.149065271
+Epoch: 0008 cost= 0.141832501
+Epoch: 0009 cost= 0.140604168
+Epoch: 0010 cost= 0.139649317
+Epoch: 0011 cost= 0.136797905
+Epoch: 0012 cost= 0.133463278
+Epoch: 0013 cost= 0.128770113
+Epoch: 0014 cost= 0.126770794
+Epoch: 0015 cost= 0.125459492
+Epoch: 0016 cost= 0.125361383
+Epoch: 0017 cost= 0.121837191
+Epoch: 0018 cost= 0.120463468
+Epoch: 0019 cost= 0.119977221
+Epoch: 0020 cost= 0.118868418
+Optimization Finished!
+
+
+\# Applying encode and decode over test set
+encode_decode = sess.run(y_pred, feed_dict={X: mnist.test.images[:examples_to_show]})
+
+
+\# Compare original images with their reconstructions
+f, a = plt.subplots(2, 10, figsize=(10, 2))
+for i in range(examples_to_show):
+    a[0][i].imshow(np.reshape(mnist.test.images[i], (28, 28)))
+    a[1][i].imshow(np.reshape(encode_decode[i], (28, 28)))
+
+
+
+
+
+
+
+
 
 
 
@@ -31,7 +154,193 @@ AUTOENCODERS
 
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------------------------------------------------------
 DEEP BELIEF NETWORK
+
+\Creating the Deep Belief Network
+With the RBM Class created and MNIST Datasets loaded in, we can start creating the DBN. For our example, we are going to use a 3 RBMs, one with 500 hidden units, the second one With 200 and the last one with 50. We are generating a deep hierarchical representation of the training data. The cell below accomplishes this:
+
+RBM_hidden_sizes = [500, 200 , 50 ] #create 2 layers of RBM with size 400 and 100
+​
+#Since we are training, set input as training data
+inpX = trX
+​
+#Create list to hold our RBMs
+rbm_list = []
+​
+#Size of inputs is the number of inputs in the training set
+input_size = inpX.shape[1]
+​
+#For each RBM we want to generate
+for i, size in enumerate(RBM_hidden_sizes):
+    print ('RBM: ',i,' ',input_size,'->', size)
+    rbm_list.append(RBM(input_size, size))
+    input_size = size
+>>>
+RBM:  0   784 -> 500
+RBM:  1   500 -> 200
+RBM:  2   200 -> 50
+
+#For each RBM in our list
+for rbm in rbm_list:
+    print ('New RBM:')
+    #Train a new one
+    rbm.train(inpX) 
+    #Return the output layer
+    inpX = rbm.rbm_outpt(inpX)
+>>>
+New RBM:
+Epoch: 0 reconstruction error: 0.061162
+Epoch: 1 reconstruction error: 0.052623
+Epoch: 2 reconstruction error: 0.049092
+Epoch: 3 reconstruction error: 0.047175
+Epoch: 4 reconstruction error: 0.045582
+New RBM:
+Epoch: 0 reconstruction error: 0.035649
+Epoch: 1 reconstruction error: 0.031590
+Epoch: 2 reconstruction error: 0.029411
+Epoch: 3 reconstruction error: 0.028410
+Epoch: 4 reconstruction error: 0.027485
+New RBM:
+Epoch: 0 reconstruction error: 0.054614
+Epoch: 1 reconstruction error: 0.051611
+Epoch: 2 reconstruction error: 0.049952
+Epoch: 3 reconstruction error: 0.048931
+Epoch: 4 reconstruction error: 0.048899
+"Now we can convert the learned representation of input data into a supervised prediction, e.g. a linear classifier. Specifically, we use the output of the last hidden layer of the DBN to classify digits using a shallow Neural Network."
+
+
+\Neural Network
+The Class below implements the Neural Network that makes use of the pre-trained RBMs from above.
+
+import numpy as np
+import math
+import tensorflow as tf
+
+################## SKIPPED ############################
+class NN(object):
+    
+    def __init__(self, sizes, X, Y):
+        #Initialize hyperparameters
+        self._sizes = sizes
+        self._X = X
+        self._Y = Y
+        self.w_list = []
+        self.b_list = []
+        self._learning_rate =  1.0
+        self._momentum = 0.0
+        self._epoches = 10
+        self._batchsize = 100
+        input_size = X.shape[1]
+        
+        #initialization loop
+        for size in self._sizes + [Y.shape[1]]:
+            #Define upper limit for the uniform distribution range
+            max_range = 4 * math.sqrt(6. / (input_size + size))
+            
+            #Initialize weights through a random uniform distribution
+            self.w_list.append(
+                np.random.uniform( -max_range, max_range, [input_size, size]).astype(np.float32))
+            
+            #Initialize bias as zeroes
+            self.b_list.append(np.zeros([size], np.float32))
+            input_size = size
+      
+    #load data from rbm
+    def load_from_rbms(self, dbn_sizes,rbm_list):
+        #Check if expected sizes are correct
+        assert len(dbn_sizes) == len(self._sizes)
+        
+        for i in range(len(self._sizes)):
+            #Check if for each RBN the expected sizes are correct
+            assert dbn_sizes[i] == self._sizes[i]
+        
+        #If everything is correct, bring over the weights and biases
+        for i in range(len(self._sizes)):
+            self.w_list[i] = rbm_list[i].w
+            self.b_list[i] = rbm_list[i].hb
+
+    #Training method
+    def train(self):
+        #Create placeholders for input, weights, biases, output
+        _a = [None] * (len(self._sizes) + 2)
+        _w = [None] * (len(self._sizes) + 1)
+        _b = [None] * (len(self._sizes) + 1)
+        _a[0] = tf.placeholder("float", [None, self._X.shape[1]])
+        y = tf.placeholder("float", [None, self._Y.shape[1]])
+        
+        #Define variables and activation functoin
+        for i in range(len(self._sizes) + 1):
+            _w[i] = tf.Variable(self.w_list[i])
+            _b[i] = tf.Variable(self.b_list[i])
+        for i in range(1, len(self._sizes) + 2):
+            _a[i] = tf.nn.sigmoid(tf.matmul(_a[i - 1], _w[i - 1]) + _b[i - 1])
+        
+        #Define the cost function
+        cost = tf.reduce_mean(tf.square(_a[-1] - y))
+        
+        #Define the training operation (Momentum Optimizer minimizing the Cost function)
+        train_op = tf.train.MomentumOptimizer(self._learning_rate, self._momentum).minimize(cost)
+        
+        #Prediction operation
+        predict_op = tf.argmax(_a[-1], 1)
+        
+        #Training Loop
+        with tf.Session() as sess:
+            #Initialize Variables
+            sess.run(tf.global_variables_initializer())
+            
+            #For each epoch
+            for i in range(self._epoches):
+                
+                #For each step
+                for start, end in zip(range(0, len(self._X), self._batchsize), range(self._batchsize, len(self._X), self._batchsize)):
+                    
+                    #Run the training operation on the input data
+                    sess.run(train_op, feed_dict={ _a[0]: self._X[start:end], y: self._Y[start:end]})
+                
+                for j in range(len(self._sizes) + 1):
+                    #Retrieve weights and biases
+                    self.w_list[j] = sess.run(_w[j])
+                    self.b_list[j] = sess.run(_b[j])
+                
+                print ("Accuracy rating for epoch " + str(i) + ": " + str(np.mean(np.argmax(self._Y, axis=1) == sess.run(predict_op, feed_dict={_a[0]: self._X, y: self._Y}))))
+################## SKIPPED ############################
+nNet = NN(RBM_hidden_sizes, trX, trY)
+nNet.load_from_rbms(RBM_hidden_sizes,rbm_list)
+nNet.train()
+>>>
+Accuracy rating For epoch 0: 0.46587272727272727
+Accuracy rating For epoch 1: 0.6839090909090909
+Accuracy rating For epoch 2: 0.7209272727272727
+Accuracy rating For epoch 3: 0.7361454545454545
+Accuracy rating For epoch 4: 0.7502
+Accuracy rating For epoch 5: 0.7830181818181818
+Accuracy rating For epoch 6: 0.8008727272727273
+Accuracy rating For epoch 7: 0.8110181818181819
+Accuracy rating For epoch 8: 0.8174181818181818
+Accuracy rating For epoch 9: 0.8226727272727272
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -186,3 +186,10 @@ with tf.Session() as sess:
     test_label = mnist.test.labels[:test_len]
     print("Testing Accuracy:", \
         sess.run(accuracy, feed_dict={x: test_data, y: test_label}))
+
+
+
+QUIZ
+Why RNNs are susceptible to issues with their gradients?
+
+ Numerical computation of gradients can drive into instabilities  Gradients can quickly drop and stabilize at near zero  Propagation of errors due to the recurrent characteristic  Gradients can grow exponentially
