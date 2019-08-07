@@ -229,6 +229,77 @@ Contrastive Divergence is actually matrix of values that is computed and used to
 
 
 
+h1_prob = tf.nn.sigmoid(tf.matmul(v1_state, W) + hb)
+h1_state = tf.nn.relu(tf.sign(h1_prob - tf.random_uniform(tf.shape(h1_prob)))) #sample_h_given_X
+
+alpha = 0.01
+W_Delta = tf.matmul(tf.transpose(v0_state), h0_prob) - tf.matmul(tf.transpose(v1_state), h1_prob)
+update_w = W + alpha * W_Delta
+update_vb = vb + alpha * tf.reduce_mean(v0_state - v1_state, 0)
+update_hb = hb + alpha * tf.reduce_mean(h0_state - h1_state, 0)
+
+
+cur_w = np.zeros([784, 50], np.float32)
+cur_vb = np.zeros([784], np.float32)
+cur_hb = np.zeros([50], np.float32)
+prv_w = np.zeros([784, 50], np.float32)
+prv_vb = np.zeros([784], np.float32)
+prv_hb = np.zeros([50], np.float32)
+sess = tf.Session()
+init = tf.global_variables_initializer()
+sess.run(init)
+
+sess.run(err, feed_dict={v0_state: trX, W: prv_w, vb: prv_vb, hb: prv_hb})
+0.48159346
+
+#Parameters
+epochs = 5
+batchsize = 100
+weights = []
+errors = []
+
+for epoch in range(epochs):
+    for start, end in zip( range(0, len(trX), batchsize), range(batchsize, len(trX), batchsize)):
+        batch = trX[start:end]
+        cur_w = sess.run(update_w, feed_dict={ v0_state: batch, W: prv_w, vb: prv_vb, hb: prv_hb})
+        cur_vb = sess.run(update_vb, feed_dict={v0_state: batch, W: prv_w, vb: prv_vb, hb: prv_hb})
+        cur_hb = sess.run(update_hb, feed_dict={ v0_state: batch, W: prv_w, vb: prv_vb, hb: prv_hb})
+        prv_w = cur_w
+        prv_vb = cur_vb
+        prv_hb = cur_hb
+        if start % 10000 == 0:
+            errors.append(sess.run(err, feed_dict={v0_state: trX, W: cur_w, vb: cur_vb, hb: cur_hb}))
+            weights.append(cur_w)
+    print ('Epoch: %d' % epoch,'reconstruction error: %f' % errors[-1])
+plt.plot(errors)
+plt.xlabel("Batch Number")
+plt.ylabel("Error")
+plt.show()
+>>>
+Epoch: 0 reconstruction error: 0.092520
+Epoch: 1 reconstruction error: 0.090862
+Epoch: 2 reconstruction error: 0.089657
+Epoch: 3 reconstruction error: 0.089712
+Epoch: 4 reconstruction error: 0.089439
+
+
+uw = weights[-1].T
+print (uw) # a weight matrix of shape (50,784)
+
+
+\Learned features
+We can take each hidden unit and visualize the connections between that hidden unit and each element in the input vector. In our case, we have 50 hidden units. Lets visualize those.
+Let`s plot the current weights: tile_raster_images helps in generating an easy to grasp image from a set of samples or weights. It transform the uw (with one flattened image per row of size 784), into an array (of size  25×20 ) in which images are reshaped and laid out like tiles on a floor.
+
+tile_raster_images(X=cur_w.T, img_shape=(28, 28), tile_shape=(5, 10), tile_spacing=(1, 1))
+import matplotlib.pyplot as plt
+from PIL import Image
+%matplotlib inline
+image = Image.fromarray(tile_raster_images(X=cur_w.T, img_shape=(28, 28) ,tile_shape=(5, 10), tile_spacing=(1, 1)))
+### Plot image
+plt.rcParams['figure.figsize'] = (18.0, 18.0)
+imgplot = plt.imshow(image)
+imgplot.set_cmap('gray')  
 
 
 
@@ -242,9 +313,213 @@ Contrastive Divergence is actually matrix of values that is computed and used to
 
 
 
+
+
+
+
+
+
+
+
+
+
+----------------------------------------------------------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------------------------------------------------------
 4.2-Review-CollaborativeFilteringwithRBM
+	MovieID	Title			 					Genres
+0	1		Toy Story (1995)					Animation|Children`s|Comedy
+1	2		Jumanji (1995)						Adventure|Children`s|Fantasy
+2	3		Grumpier Old Men (1995)				Comedy|Romance
+3	4		Waiting to Exhale (1995)			Comedy|Drama
+4	5		Father of the Bride Part II (1995)	Comedy
+
+	UserID		MovieID	Rating	Timestamp
+0	1	1193	5				978300760
+1	1	661		3				978302109
+2	1	914		3				978301968
+3	1	3408	4				978300275
+4	1	2355	5				978824291
+
+\Formatting the Data
+#Now, we can start formatting the data into input for the RBM. We're going to store the normalized users ratings into as a matrix of user-rating called trX, and normalize the values.
+user_rating_df = ratings_df.pivot(index='UserID', columns='MovieID', values='Rating')
+user_rating_df.head()
+6040 rows × 3706 columns
+MovieID	1	2	3	4	5	6	7	8	9	10	...	3943	3944	3945	3946	3947	3948	3949	3950	3951	3952
+UserID																					
+1		5.0	NaN	NaN	NaN	NaN	NaN	NaN	NaN	NaN	NaN	...	NaN	NaN	NaN	NaN	NaN	NaN	NaN	NaN	NaN	NaN
+2		NaN	NaN	NaN	NaN	NaN	NaN	NaN	NaN	NaN	NaN	...	NaN	NaN	NaN	NaN	NaN	NaN	NaN	NaN	NaN	NaN
+3		NaN	NaN	NaN	NaN	NaN	NaN	NaN	NaN	NaN	NaN	...	NaN	NaN	NaN	NaN	NaN	NaN	NaN	NaN	NaN	NaN
+4		NaN	NaN	NaN	NaN	NaN	NaN	NaN	NaN	NaN	NaN	...	NaN	NaN	NaN	NaN	NaN	NaN	NaN	NaN	NaN	NaN
+5		NaN	NaN	NaN	NaN	NaN	2.0	NaN	NaN	NaN	NaN	...	NaN	NaN	NaN	NaN	NaN	NaN	NaN	NaN	NaN	NaN
+
+\normalize
+norm_user_rating_df = user_rating_df.fillna(0) / 5.0
+trX = norm_user_rating_df.values
+trX[0:5]
+
+array([[1., 0., 0., ..., 0., 0., 0.],
+       [0., 0., 0., ..., 0., 0., 0.],
+       [0., 0., 0., ..., 0., 0., 0.],
+       [0., 0., 0., ..., 0., 0., 0.],
+       [0., 0., 0., ..., 0., 0., 0.]])
+
+\Setting the Model's Parameters
+
+hiddenUnits = 20
+visibleUnits =  len(user_rating_df.columns)
+vb = tf.placeholder("float", [visibleUnits]) #Number of unique movies
+hb = tf.placeholder("float", [hiddenUnits]) #Number of features we're going to learn
+W = tf.placeholder("float", [visibleUnits, hiddenUnits])
 
 
+
+
+\"MAIN STEPS FP and BP"
+#######################################################################
+\Phase 1: Input Processing
+v0 = tf.placeholder("float", [None, visibleUnits])
+_h0 = tf.nn.sigmoid(tf.matmul(v0, W) + hb)
+h0 = tf.nn.relu(tf.sign(_h0 - tf.random_uniform(tf.shape(_h0))))
+
+
+\Phase 2: Reconstruction
+_v1 = tf.nn.sigmoid(tf.matmul(h0, tf.transpose(W)) + vb) 
+v1 = tf.nn.relu(tf.sign(_v1 - tf.random_uniform(tf.shape(_v1))))
+
+h1 = tf.nn.sigmoid(tf.matmul(v1, W) + hb)
+#######################################################################
+
+#Learning rate
+alpha = 1.0
+
+#Create the gradients GIBBS SAMPLING 𝑝(ℎ|𝑣)=𝑠𝑖𝑔𝑚𝑜𝑖𝑑(𝑋⊗𝑊+ℎ𝑏)   #𝑝(𝑣|ℎ)=𝑠𝑖𝑔𝑚𝑜𝑖𝑑(ℎ0⊗𝑡𝑟𝑎𝑛𝑠𝑝𝑜𝑠𝑒(𝑊)+𝑣𝑏) 
+w_pos_grad = tf.matmul(tf.transpose(v0), h0)
+w_neg_grad = tf.matmul(tf.transpose(v1), h1)
+
+#Calculate the Contrastive Divergence to maximize # Δ𝑊 = (𝑣0 ⊗ ℎ0) − (𝑣𝑘 ⊗ ℎ𝑘) - 
+CD = (w_pos_grad - w_neg_grad) / tf.to_float(tf.shape(v0)[0])
+
+#Create methods to update the weights and biases # 𝑊′ = 𝑊 + 𝑎𝑙𝑝ℎ𝑎 ∗ Δ𝑊
+update_w = W + alpha * CD
+update_vb = vb + alpha * tf.reduce_mean(v0 - v1, 0)
+update_hb = hb + alpha * tf.reduce_mean(h0 - h1, 0)
+
+err = v0 - v1
+err_sum = tf.reduce_mean(err * err)
+
+#Current weight
+cur_w = np.zeros([visibleUnits, hiddenUnits], np.float32)
+#Current visible unit biases
+cur_vb = np.zeros([visibleUnits], np.float32)
+#Current hidden unit biases
+cur_hb = np.zeros([hiddenUnits], np.float32)
+#Previous weight
+prv_w = np.zeros([visibleUnits, hiddenUnits], np.float32)
+#Previous visible unit biases
+prv_vb = np.zeros([visibleUnits], np.float32)
+#Previous hidden unit biases
+prv_hb = np.zeros([hiddenUnits], np.float32)
+sess = tf.Session()
+sess.run(tf.global_variables_initializer())
+
+
+epochs = 15
+batchsize = 100
+errors = []
+for i in range(epochs):
+    for start, end in zip( range(0, len(trX), batchsize), range(batchsize, len(trX), batchsize)):
+        batch = trX[start:end]
+        cur_w = sess.run(update_w, feed_dict={v0: batch, W: prv_w, vb: prv_vb, hb: prv_hb})
+        cur_vb = sess.run(update_vb, feed_dict={v0: batch, W: prv_w, vb: prv_vb, hb: prv_hb})
+        cur_nb = sess.run(update_hb, feed_dict={v0: batch, W: prv_w, vb: prv_vb, hb: prv_hb})
+        prv_w = cur_w
+        prv_vb = cur_vb
+        prv_hb = cur_hb
+    errors.append(sess.run(err_sum, feed_dict={v0: trX, W: cur_w, vb: cur_vb, hb: cur_hb}))
+    print (errors[-1])
+plt.plot(errors)
+plt.ylabel('Error')
+plt.xlabel('Epoch')
+plt.show()
+
+
+\Recommendation
+mock_user_id = 215
+
+#Selecting the input user
+inputUser = trX[mock_user_id-1].reshape(1, -1)
+inputUser[0:5]
+array([[0.8, 0. , 0. , ..., 0. , 0. , 0. ]])
+
+#Feeding in the user and reconstructing the input
+hh0 = tf.nn.sigmoid(tf.matmul(v0, W) + hb)
+vv1 = tf.nn.sigmoid(tf.matmul(hh0, tf.transpose(W)) + vb)
+feed = sess.run(hh0, feed_dict={ v0: inputUser, W: prv_w, hb: prv_hb})
+rec = sess.run(vv1, feed_dict={ hh0: feed, W: prv_w, vb: prv_vb})
+print(rec)
+[[0.31401148 0.22032845 0.02421106 ... 0.00336228 0.00272663 0.02197457]]
+
+
+scored_movies_df_mock = movies_df[movies_df['MovieID'].isin(user_rating_df.columns)]
+scored_movies_df_mock = scored_movies_df_mock.assign(RecommendationScore = rec[0])
+scored_movies_df_mock.sort_values(["RecommendationScore"], ascending=False).head(20)
+
+		MovieID	Title	 			 								Genres 		                   RecommendationScore
+257		260		Star Wars: Episode IV - A New Hope (1977)			Action|Adventure|Fantasy|Sci-Fi	0.984106
+1178	1196	Star Wars: Episode V - The Empire Strikes Back...	Action|Adventure|Drama|Sci-Fi|War	0.935710
+2502	2571	Matrix, The (1999)		                            Action|Sci-Fi|Thriller	0.930792
+1192	1210	Star Wars: Episode VI - Return of the Jedi (1983)	Action|Adventure|Romance|Sci-Fi|War	0.889082
+585		589		Terminator 2: Judgment Day (1991)	                Action|Sci-Fi|Thriller	0.839085
+1539	1580	Men in Black (1997)	                                Action|Adventure|Comedy|Sci-Fi	0.783183
+2559	2628	Star Wars: Episode I - The Phantom Menace (1999)	Action|Adventure|Fantasy|Sci-Fi	0.766976
+476		480		Jurassic Park (1993)	                            Action|Adventure|Sci-Fi	0.757520
+1335	1356	Star Trek: First Contact (1996)	                    Action|Adventure|Sci-Fi	0.744073
+1180	1198	Raiders of the Lost Ark (1981)	                    Action|Adventure	0.733858
+1271	1291	Indiana Jones and the Last Crusade (1989)	        Action|Adventure	0.667820
+1353	1374	Star Trek: The Wrath of Khan (1982)	                Action|Adventure|Sci-Fi	0.652664
+1081	1097	E.T. the Extra-Terrestrial (1982)	                Children`s|Drama|Fantasy|Sci-Fi	0.610945
+2847	2916	Total Recall (1990)	                                Action|Adventure|Sci-Fi|Thriller	0.607223
+1220	1240	Terminator, The (1984)	                            Action|Sci-Fi|Thriller	0.606743
+1355	1376	Star Trek IV: The Voyage Home (1986)	            Action|Adventure|Sci-Fi	0.569480
+1959	2028	Saving Private Ryan (1998)							Action|Drama|War	0.554293
+1179	1197	Princess Bride, The (1987)							Action|Adventure|Comedy|Romance	0.553741
+770		780		Independence Day (ID4) (1996)						Action|Sci-Fi|War	0.553683
+1351	1372	Star Trek VI: The Undiscovered Country (1991)		Action|Adventure|Sci-Fi	0.551598
+
+
+#Now, we can find all the movies that our mock user has watched before:
+movies_df_mock = ratings_df[ratings_df['UserID'] == mock_user_id]
+movies_df_mock.head()
+	UserID	MovieID	Rating	Timestamp
+31603	215	3793	5	977099259
+31604	215	1	4	979174987
+31605	215	1197	5	976899663
+31606	215	2302	5	976899718
+31607	215	2167	5	976899770
+
+
+#In the next cell, we merge all the movies that our mock users has watched with the predicted scores based on his historical data:
+#Merging movies_df with ratings_df by MovieID
+merged_df_mock = scored_movies_df_mock.merge(movies_df_mock, on='MovieID', how='outer')
+merged_df_mock.sort_values(["RecommendationScore"], ascending=False).head(20)
+
+	     MovieID	Title	                                            Genres	                          RecommendationScore	UserID	Rating	Timestamp
+253	    260	    	Star Wars: Episode IV - A New Hope (1977)	        Action|Adventure|Fantasy|Sci-Fi	    0.984106			215.0	5.0		976899190.0
+1106	1196 		Star Wars: Episode V - The Empire Strikes Back...	Action|Adventure|Drama|Sci-Fi|War   0.935710			\NaN		NaN		NaN
+2374	2571		Matrix, The (1999)	                                Action|Sci-Fi|Thriller	            0.930792			\NaN		NaN		NaN
+1120	1210		Star Wars: Episode VI - Return of the Jedi (1983)	Action|Adventure|Romance|Sci-Fi|War	0.889082			215.0	5.0		976899689.0
+575	    589	    	Terminator 2: Judgment Day (1991)	                Action|Sci-Fi|Thriller	            0.839085			\NaN		NaN		NaN
+1449	1580		Men in Black (1997)	                                Action|Adventure|Comedy|Sci-Fi	    0.783183			\NaN		NaN		NaN
+
+
+
+"As you can see, there are some movies that user has not watched yet and has high score based on our model. So, we can recommend them to the user."
+"This is the end of the module. If you want, you can try to change the parameters in the code -- adding more units to the hidden layer, changing the loss functions or maybe something else to see if it changes anything. Does the model perform better? Does it take longer to compute?"
+----------------------------------------------------------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------------------------------------------------------------------
 QUIZ
 @Select the True statement about Restricted means in RBM?
