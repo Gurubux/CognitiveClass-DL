@@ -1,17 +1,100 @@
-Module 1 –  Quick review on Deep Learning
-	Intro to Deep Learning
-	Deep Learning Pipeline
+MODULE 1 –  QUICK REVIEW ON DEEP LEARNING
+----------------------------------------------------------------------------------------------------------------------------------------------------
+INTRO TO DEEP LEARNING
+WHY BOOM ?
+	1. In the dramatic increases in computer processing capabilities; 
+	2. In the availability of massive amounts of data for training computer systems; 
+	3. In the advances in machine learning algorithms and research.
 
-Module 2 –  Hardware Accelerated Deep Learning
-	How to accelerate a deep learning model?
-	Running TensorFlow operations on CPUs vs. GPUs
-	Convolutional Neural Networks on GPUs
-	Recurrent  Neural Networks on GPUs
+WHY BETTER THAN ML ?
+	However, as you can imagine, the process of selecting and using the best features is a tremendously time-consuming task and is often ineffective. Furthermore, extending the features to other types of images becomes an even greater problem – because the features you’ve used to discriminate cats and dogs, cannot be easily generalized to things like recognizing hand-written digits, for example. Therefore, the importance of effectively and accurately selecting features can’t be overstated.
+	Enter “deep neural networks” – such as Convolutional Neural Networks. Suddenly, without having to find or select features, this network "AUTOMATICALLY AND EFFECTIVELY FINDS THE BEST FEATURES" for you. So instead of you choosing what image features to classify dogs versus cats, Convolutional Neural Networks can automatically find those features and classify the images for you. 
+	"So, we can say Deep Learning is an algorithm that learns directly from samples much better than traditional approaches".
 
-Module 3 – Deep Learning in the Cloud
-	Deep Learning in the Cloud
-	How does one use a GPU
-	Stock Price Prediction
+----------------------------------------------------------------------------------------------------------------------------------------------------
+DEEP LEARNING PIPELINE
+WHY THE DEEP LEARNING PIPELINE IS SLOW?
+	Large Networks and multiple iterations 
+----------------------------------------------------------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------------------------------------------------------
+MODULE 2 –  HARDWARE ACCELERATED DEEP LEARNING
+----------------------------------------------------------------------------------------------------------------------------------------------------
+HOW TO ACCELERATE A DEEP LEARNING MODEL?
+	- Google’s Tensor Processing Unit (or TPU) or 
+	- Nvidia GPU
+First, recall that Deep Neural Networks need to fetch input images as matrices from main memory. And "GPUs perform very well at fetching big chunks of memory". So, we can say that GPUs are optimized to properly fetch such high-dimensional matrices. 
+Second, GPUs are the proper choice for parallelism operations on matrices, that is, they are very good where the same code runs on different sections of the same array. Now, recall that a Deep Neural Network is a matrix of weights where the dot product between the weights and the input image needs to be done many times. GPUs can also use their ability for parallelism to do all the multiplications at the same time, instead of doing them one after the other. This type of "concurrent processing" is exactly what’s required in deep learning. So, the GPU "parallelism" FEATURE REDUCES THE COMPUTATION TIMES OF THE DOT PRODUCT OF 18 BIG MATRICES.
 
-Module 4 – Distributed Deep Learning
-	Distributed Deep Learning
+
+
+----------------------------------------------------------------------------------------------------------------------------------------------------
+RUNNING TENSORFLOW OPERATIONS ON CPUS VS. GPUS
+I explained about the difference between GPU and CPU, but lets point out some important parts of using GPU here:
+
+\Performance of GPU vs CPU
+	Most of Deep Learning models, especially in their training phase, involve a lot of matrix and vector multiplications that can parallelized. In this case, GPUs can overperform CPUs, because GPUs were designed to handle these kind of matrix operations in parallel!
+
+\Why GPU overperforms CPU?
+	A single core CPU takes a matrix operation in serial, one element at a time. But, a single GPU could have hundreds or thousands of cores, while a CPU typically has no more than a few cores.
+
+\What types of operations should I send to the GPU?
+	Basically, if a step of the process encompass “do this mathematical operation many times”, then it is a good candidate operation to send it to be run on the GPU. For example,
+	- Matrix multiplication
+	- Computing the inverse of a matrix.
+	- Gradient calculation, which are computed on multiple GPUs individually and are averaged on CPU
+
+\When should not use GPU?
+GPUs don’t have direct access to the rest of your computer (except, of course for the display). Due to this, if you are running a command on a GPU, you need to copy all of the data to the GPU first, then do the operation, then copy the result back to your computer’s main memory. TensorFlow handles this under the hood, so the code is simple, but the work still needs to be performed.
+
+\How to use GPU with TensorFlow?
+It is important to notice that if both CPU and GPU are available on the machine that you are running a notebook, and if a TensorFlow operation has both CPU and GPU implementations, the GPU devices will be given priority when the operation is assigned to a device. Lets practice it in Labs.  
+----------------------------------------------------------------------------------------------------------------------------------------------------
+CONVOLUTIONAL NEURAL NETWORKS ON GPUS
+----------------------------------------------------------------------------------------------------------------------------------------------------
+?????????RECURRENT  NEURAL NETWORKS ON GPUS
+
+----------------------------------------------------------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------------------------------------------------------
+MODULE 3 – DEEP LEARNING IN THE CLOUD
+----------------------------------------------------------------------------------------------------------------------------------------------------
+DEEP LEARNING IN THE CLOUD
+
+----------------------------------------------------------------------------------------------------------------------------------------------------
+HOW DOES ONE USE A GPU
+
+1. NVIDIA GPUs
+	- Pascal Card
+	- Tesla Card
+2. TPU(Tensorflow Processing Unit) - Google
+3. AMD GPUs
+4. FPGAs (Intel)
+
+You can use Google’s TPUs, Nvidia GPU or even FPGA to accelerate your deep learning network computation time. 
+
+LIMITATIONS
+	1. GPUs have two key limitations: The first involves limited memory capacity.
+		Unfortunately, GPUs currently have up to 16GB of memory, so this is not practical for very large datasets
+		So, you need a platform that can handle fast memory access in system memory, and also fast data exchange between GPUs.
+	2. Expensive and there are some dependencies and incompatibilities, which is the same as most hardware.
+
+The first one to consider is that some personal computers have an embedded GPU. 
+	For example, a laptop with a recent NVIDIA GPU should support CUDA, so you can at least play around with deep learning networks, and you can use it to train your deep learning,
+	Many cloud providers are offering GPU services as virtual machines with GPUs that you can use, like IBM cloud, Amazon AWS, or Google cloud.
+
+However, you should consider that you need to upload all your data on the cloud and train the network on the cloud, which sometimes is a hassle. 
+
+----------------------------------------------------------------------------------------------------------------------------------------------------
+?????????STOCK PRICE PREDICTION
+
+----------------------------------------------------------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------------------------------------------------------
+MODULE 4 – DISTRIBUTED DEEP LEARNING
+----------------------------------------------------------------------------------------------------------------------------------------------------
+DISTRIBUTED DEEP LEARNING
+----------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
